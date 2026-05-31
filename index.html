@@ -1541,7 +1541,8 @@ function showSheetsStatus(type, msg) {
 }
 
 async function sendToSheets(record) {
-  const APPS_URL = localStorage.getItem(SHEETS_KEY);
+ const DEFAULT_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxtv20semh1R4umK9rW54L1hi_khL7OYxbnVh8zR5hDx_nUGiD_cfLVM9ARXFEWPxNs6w/exec';
+const APPS_URL = localStorage.getItem(SHEETS_KEY) || DEFAULT_SHEETS_URL;
 
   if (!APPS_URL) {
     showToast('⚠️ URL Google Sheets belum disambungkan. Klik tombol Sheets dulu.');
