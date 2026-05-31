@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TGOFresh – Laporan Panen & Penjualan Realtime</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-deep:   #1a4d2e;
+  --green-mid:    #2d7a4f;
+  --green-bright: #4caf50;
+  --green-light:  #e8f5e9;
+  --green-lime:   #8bc34a;
+  --amber:        #f59e0b;
+  --red:          #ef4444;
+  --ink:          #0f1c14;
+  --ink-muted:    #5a7060;
+  --surface:      #ffffff;
+  --surface-2:    #f4faf5;
+  --surface-3:    #eaf4ec;
+  --border:       #d0e8d4;
+  --border-dark:  #a8d5ae;
+  --shadow:       0 2px 12px rgba(26,77,46,0.10);
+  --shadow-lg:    0 8px 32px rgba(26,77,46,0.15);
+  --radius:       12px;
+  --radius-lg:    20px;
+
+  /* Komoditas warna */
+  --oyong:    #2d7a4f;
+  --cabe:     #dc2626;
+  --melon:    #d97706;
+  --semangka: #7c3aed;
+  --oyong-bg:    #e8f5f0;
+  --cabe-bg:     #fef2f2;
+  --melon-bg:    #fffbeb;
+  --semangka-bg: #f5f3ff;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: #f0f7f1;
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── HEADER / LOGO BAR ── */
+.header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  gap: 1rem;
+}
+
+/* LOGO */
+.logo-box {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-shrink: 0;
+}
+
+.logo-icon-real {
+  height: 54px;
+  width: auto;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 2px 6px;
+  border: 1px solid #e0e0e0;
+}
+.logo-icon-real img {
+  height: 50px;
+  width: auto;
+  display: block;
+}
+
+.logo-text-block {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.logo-brand {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+.logo-brand span.tgo { color: var(--green-deep); }
+.logo-brand span.fresh { color: var(--green-bright); }
+
+.logo-sub {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+
+.logo-tagline {
+  font-size: 0.58rem;
+  color: var(--green-mid);
+  font-style: italic;
+  letter-spacing: 0.05em;
+  margin-top: 3px;
+}
+
+.header-title {
+  text-align: center;
+  flex: 1;
+}
+.header-title h1 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--green-deep);
+  letter-spacing: 0.02em;
+}
+.header-title .live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--green-light);
+  color: var(--green-mid);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  background: var(--green-bright);
+  border-radius: 50%;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; transform: scale(1); }
+  50%      { opacity:0.4; transform: scale(0.7); }
+}
+
+.header-clock {
+  text-align: right;
+  flex-shrink: 0;
+}
+.clock-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--green-deep);
+}
+.clock-date {
+  font-size: 0.65rem;
+  color: var(--ink-muted);
+  margin-top: 1px;
+}
+
+/* ── MAIN LAYOUT ── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1.2rem 4rem;
+}
+
+/* ── SUMMARY CARDS ── */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+@media(max-width:768px) { .summary-cards { grid-template-columns: repeat(2,1fr); } }
+
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 99px 99px 0 0;
+}
+.stat-oyong::before    { background: var(--oyong); }
+.stat-cabe::before     { background: var(--cabe); }
+.stat-melon::before    { background: var(--melon); }
+.stat-semangka::before { background: var(--semangka); }
+
+.stat-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.stat-oyong .stat-label    { color: var(--oyong); }
+.stat-cabe .stat-label     { color: var(--cabe); }
+.stat-melon .stat-label    { color: var(--melon); }
+.stat-semangka .stat-label { color: var(--semangka); }
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+}
+.stat-unit {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  font-weight: 500;
+  margin-left: 3px;
+}
+.stat-sub {
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+  margin-top: 0.3rem;
+}
+
+/* ── 2-COLUMN GRID ── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+@media(max-width:900px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* ── FORM CARD ── */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-header {
+  background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+  color: white;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.card-header-icon {
+  width: 32px; height: 32px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.card-header h2 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.card-header p {
+  font-size: 0.68rem;
+  opacity: 0.8;
+  margin-top: 1px;
+}
+.card-body { padding: 1.25rem; }
+
+/* ── FORM STYLES ── */
+.form-group { margin-bottom: 1rem; }
+.form-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  margin-bottom: 0.4rem;
+}
+.form-control {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: var(--surface-2);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.form-control:focus {
+  border-color: var(--green-mid);
+  box-shadow: 0 0 0 3px rgba(45,122,79,0.12);
+  background: white;
+}
+select.form-control { cursor: pointer; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* Komoditas selector chips */
+.komoditas-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.kchip {
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--ink-muted);
+  user-select: none;
+}
+.kchip.active-oyong    { background: var(--oyong-bg);    border-color: var(--oyong);    color: var(--oyong); }
+.kchip.active-cabe     { background: var(--cabe-bg);     border-color: var(--cabe);     color: var(--cabe); }
+.kchip.active-melon    { background: var(--melon-bg);    border-color: var(--melon);    color: var(--melon); }
+.kchip.active-semangka { background: var(--semangka-bg); border-color: var(--semangka); color: var(--semangka); }
+
+/* Sales entries area */
+.sales-entries { margin-bottom: 1rem; }
+.sales-entry {
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem;
+  margin-bottom: 0.6rem;
+  position: relative;
+}
+.sales-entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+.sales-entry-num {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green-mid);
+}
+.btn-remove-entry {
+  background: none;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.btn-remove-entry:hover { background: #fef2f2; }
+
+.btn-add-entry {
+  width: 100%;
+  padding: 0.6rem;
+  border: 2px dashed var(--border-dark);
+  border-radius: 8px;
+  background: none;
+  color: var(--green-mid);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-add-entry:hover {
+  background: var(--green-light);
+  border-color: var(--green-mid);
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 0.9rem;
+  background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s;
+  box-shadow: 0 4px 14px rgba(26,77,46,0.3);
+  margin-top: 0.5rem;
+}
+.btn-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(26,77,46,0.4);
+}
+.btn-submit:active { transform: translateY(0); }
+
+/* ── RIWAYAT PANEL ── */
+.riwayat-header {
+  background: linear-gradient(135deg, #0f1c14, var(--green-deep));
+}
+
+.filter-bar {
+  padding: 1rem 1.25rem;
+  border-bottom: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.fchip {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--surface-2);
+  color: var(--ink-muted);
+  letter-spacing: 0.04em;
+}
+.fchip.all.active { background: var(--green-deep); border-color: var(--green-deep); color: white; }
+.fchip.oyong.active    { background: var(--oyong-bg);    border-color: var(--oyong);    color: var(--oyong); }
+.fchip.cabe.active     { background: var(--cabe-bg);     border-color: var(--cabe);     color: var(--cabe); }
+.fchip.melon.active    { background: var(--melon-bg);    border-color: var(--melon);    color: var(--melon); }
+.fchip.semangka.active { background: var(--semangka-bg); border-color: var(--semangka); color: var(--semangka); }
+
+.export-btns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-export {
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1.5px solid;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.btn-csv {
+  background: #f0fdf4;
+  border-color: var(--green-mid);
+  color: var(--green-deep);
+}
+.btn-csv:hover { background: var(--green-light); }
+
+.btn-sheets {
+  background: #f0f7ff;
+  border-color: #4285f4;
+  color: #1a56d6;
+}
+.btn-sheets:hover { background: #dbeafe; }
+
+/* ── TABLE ── */
+.table-wrap {
+  overflow-x: auto;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-3);
+  color: var(--ink-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1.5px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+tbody tr:hover { background: var(--surface-2); }
+tbody td {
+  padding: 0.65rem 0.85rem;
+  vertical-align: top;
+}
+
+.komoditas-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge-oyong    { background: var(--oyong-bg);    color: var(--oyong); }
+.badge-cabe     { background: var(--cabe-bg);     color: var(--cabe); }
+.badge-melon    { background: var(--melon-bg);    color: var(--melon); }
+.badge-semangka { background: var(--semangka-bg); color: var(--semangka); }
+.badge-free     { background: var(--green-light); color: var(--green-deep); }
+
+.customer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.customer-item {
+  font-size: 0.78rem;
+  color: var(--ink);
+  line-height: 1.4;
+}
+.customer-item small {
+  color: var(--ink-muted);
+  display: block;
+  font-size: 0.7rem;
+}
+
+.price-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--green-deep);
+  white-space: nowrap;
+}
+.qty-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+.total-cell {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--green-deep);
+  white-space: nowrap;
+}
+
+.date-cell { white-space: nowrap; }
+.date-main { font-weight: 600; font-size: 0.8rem; }
+.date-time { font-size: 0.68rem; color: var(--ink-muted); font-family: 'JetBrains Mono', monospace; }
+
+.btn-delete {
+  background: none;
+  border: 1px solid #fca5a5;
+  color: var(--red);
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.72rem;
+  transition: all 0.12s;
+}
+.btn-delete:hover { background: var(--cabe-bg); }
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ink-muted);
+}
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.empty-state p { font-size: 0.85rem; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--green-deep);
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 999;
+  max-width: 320px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── SPREADSHEET MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+}
+.modal h3 { font-size: 1.1rem; font-weight: 800; color: var(--green-deep); margin-bottom: 0.5rem; }
+.modal p { font-size: 0.85rem; color: var(--ink-muted); margin-bottom: 1.25rem; line-height: 1.6; }
+.modal-steps {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.modal-step {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.modal-step:last-child { margin-bottom: 0; }
+.step-num {
+  width: 22px; height: 22px;
+  background: var(--green-deep);
+  color: white;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.modal-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.88rem;
+  color: var(--ink);
+  margin-bottom: 1rem;
+  outline: none;
+}
+.modal-input:focus { border-color: var(--green-mid); box-shadow: 0 0 0 3px rgba(45,122,79,0.12); }
+.modal-btns { display: flex; gap: 0.75rem; }
+.btn-modal-close {
+  flex: 1;
+  padding: 0.7rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-modal-confirm {
+  flex: 2;
+  padding: 0.7rem;
+  background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-modal-confirm:hover { opacity: 0.9; }
+
+.sheets-status {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  display: none;
+}
+.sheets-status.ok { background: #dcfce7; color: var(--green-deep); display: block; }
+.sheets-status.err { background: #fef2f2; color: var(--red); display: block; }
+
+/* Sheets modal tabs */
+.stab.active-tab {
+  border-bottom-color: var(--green-deep) !important;
+  color: var(--green-deep) !important;
+}
+
+/* Script config banner */
+.config-banner {
+  background: #fffbeb;
+  border: 1.5px solid #fcd34d;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.75rem;
+  color: #92400e;
+  margin-bottom: 0.75rem;
+  display: none;
+}
+.config-banner a {
+  color: #b45309;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.connected-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #dcfce7;
+  color: var(--green-deep);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════ -->
+<header class="header">
+  <div class="header-inner">
+
+    <!-- LOGO (white bg, SVG inline dari logo asli) -->
+    <div class="logo-box">
+      <div class="logo-icon-real"><img src="data:image/png;base64,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Z7YnRDeGOWHE4GOJJ6qL3s+sF7rrjX3RlRUVNaxsYf3pb3LWtw0MAwOBy7jniVt3yp8qr7vSxjSsFezDGMGuXfSFsvMtrfde8rfg6KSNrZg0tl32BhLxjngZ4Y4r86jRtJVaTptNVlfX1FDBIwnfkG/Kxjt4RucBxbwA4YOBzW0JhT2YZbxyW7cfga5ZdIWuzTXJ1sM8ENxY0TQmQvaHAEb4LsneIIB444DgvTtmz+y2+82W7QOqPS7TSeisfvD7MwM3BvjGCQCcEY5+xbfj2qPlUdinttwR2obbcAclKIsxkCIiAIiIAiIgCDmnuKDmgJREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREB//2Q==" alt="TGOFresh Logo" style="height:50px;width:auto;"></div>
+      <div class="logo-text-block" style="display:none;"></div>
+    </div>
+
+    <div class="header-title">
+      <h1>Laporan Panen &amp; Penjualan Realtime</h1>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        Live
+      </div>
+    </div>
+
+    <div class="header-clock">
+      <div class="clock-time" id="clockTime">--:--:--</div>
+      <div class="clock-date" id="clockDate">--- --- ----</div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════
+     MAIN
+════════════════════════════════════════════ -->
+<div class="container">
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-cards" id="summaryCards" style="grid-template-columns:repeat(4,1fr);">
+    <div class="stat-card stat-oyong">
+      <div class="stat-label">📦 Total Laporan</div>
+      <div class="stat-value" id="sum-total">0<span class="stat-unit">entri</span></div>
+      <div class="stat-sub" id="sub-total">hari ini: 0</div>
+    </div>
+    <div class="stat-card stat-melon">
+      <div class="stat-label">⚖️ Total Panen</div>
+      <div class="stat-value" id="sum-panen">0<span class="stat-unit">kg</span></div>
+      <div class="stat-sub" id="sub-panen">rata-rata: 0 kg</div>
+    </div>
+    <div class="stat-card stat-cabe">
+      <div class="stat-label">💰 Total Omzet</div>
+      <div class="stat-value" id="sum-omzet" style="font-size:1.1rem;">Rp 0</div>
+      <div class="stat-sub" id="sub-omzet">hari ini: Rp 0</div>
+    </div>
+    <div class="stat-card stat-semangka">
+      <div class="stat-label">🌿 Komoditas</div>
+      <div class="stat-value" id="sum-komoditas">0<span class="stat-unit">jenis</span></div>
+      <div class="stat-sub" id="sub-komoditas">terdaftar</div>
+    </div>
+  </div>
+
+  <!-- 2-COL LAYOUT -->
+  <div class="main-grid">
+
+    <!-- LEFT: FORM -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-icon">🌾</div>
+        <div>
+          <h2>Input Laporan Panen</h2>
+          <p>Isi data panen &amp; customer per komoditas</p>
+        </div>
+      </div>
+      <div class="card-body">
+
+        <!-- Komoditas -->
+        <div class="form-group">
+          <label class="form-label">Nama Komoditas</label>
+          <input type="text" class="form-control" id="namaKomoditas" placeholder="Contoh: Oyong, Cabe Merah, Melon Hijau...">
+        </div>
+
+        <!-- Waktu Panen -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tanggal Panen</label>
+            <input type="date" class="form-control" id="tanggalPanen">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jam Panen</label>
+            <input type="time" class="form-control" id="jamPanen">
+          </div>
+        </div>
+
+        <!-- Total Panen -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Total Panen (kg)</label>
+            <input type="number" class="form-control" id="totalPanen" placeholder="0" min="0" step="0.5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Harga/kg (Rp)</label>
+            <input type="number" class="form-control" id="hargaKg" placeholder="0" min="0">
+          </div>
+        </div>
+
+        <!-- Catatan -->
+        <div class="form-group">
+          <label class="form-label">Catatan (opsional)</label>
+          <input type="text" class="form-control" id="catatan" placeholder="misal: kualitas A, setelah hujan...">
+        </div>
+
+        <!-- Customer Entries -->
+        <div class="form-label" style="margin-bottom:0.5rem;">Data Customer / Sales</div>
+        <div class="sales-entries" id="salesEntries">
+          <!-- diisi JS -->
+        </div>
+        <button class="btn-add-entry" onclick="addSalesEntry()">+ Tambah Customer</button>
+
+        <button class="btn-submit" onclick="submitLaporan()">💾 Simpan Laporan</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: RIWAYAT -->
+    <div class="card">
+      <div class="card-header riwayat-header">
+        <div class="card-header-icon">📋</div>
+        <div>
+          <h2>Riwayat Laporan</h2>
+          <p>Filter, export, &amp; integrasi spreadsheet</p>
+        </div>
+      </div>
+
+      <!-- Filter + Export bar -->
+      <div class="filter-bar">
+        <div class="filter-chips" style="align-items:center;flex:1;gap:0.5rem;">
+          <div class="fchip all active" onclick="setFilter('all', this)">Semua</div>
+          <input type="text" id="filterKomoditas" class="form-control" 
+                 placeholder="🔍 Filter komoditas..." 
+                 style="max-width:200px;padding:0.28rem 0.7rem;font-size:0.78rem;border-radius:20px;height:auto;"
+                 oninput="setFilterText(this.value)">
+        </div>
+        <div class="export-btns">
+          <button class="btn-export btn-csv" onclick="exportCSV()">
+            ⬇️ CSV
+          </button>
+          <button class="btn-export btn-sheets" onclick="openSheetsModal()">
+            📊 Sheets
+          </button>
+        </div>
+      </div>
+
+      <!-- Config banner (tampil jika belum setup Sheets) -->
+      <div class="config-banner" id="configBanner">
+        ⚠️ Google Sheets belum terhubung. <a onclick="openSheetsModal()">Klik di sini untuk setup →</a>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Waktu</th>
+              <th>Komoditas</th>
+              <th>Total (kg)</th>
+              <th>Harga/kg</th>
+              <th>Customers</th>
+              <th>Omzet</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="riwayatBody">
+            <tr>
+              <td colspan="7">
+                <div class="empty-state">
+                  <div class="icon">🌱</div>
+                  <p>Belum ada laporan. Mulai input data panen!</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     GOOGLE SHEETS MODAL
+════════════════════════════════════════════ -->
+<!-- ═══ SHEETS SETUP MODAL ═══ -->
+<div class="modal-overlay" id="sheetsModal">
+  <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto;">
+
+    <!-- Tab nav -->
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:1.25rem;">
+      <button class="stab active" onclick="switchTab('panduan')" id="tab-panduan"
+        style="flex:1;padding:0.6rem;background:none;border:none;border-bottom:2px solid transparent;
+               font-family:'Plus Jakarta Sans',sans-serif;font-size:0.8rem;font-weight:700;
+               color:var(--ink-muted);cursor:pointer;margin-bottom:-2px;transition:all 0.15s;">
+        📋 Panduan Setup
+      </button>
+      <button class="stab" onclick="switchTab('kode')" id="tab-kode"
+        style="flex:1;padding:0.6rem;background:none;border:none;border-bottom:2px solid transparent;
+               font-family:'Plus Jakarta Sans',sans-serif;font-size:0.8rem;font-weight:700;
+               color:var(--ink-muted);cursor:pointer;margin-bottom:-2px;transition:all 0.15s;">
+        💻 Kode Apps Script
+      </button>
+      <button class="stab" onclick="switchTab('url')" id="tab-url"
+        style="flex:1;padding:0.6rem;background:none;border:none;border-bottom:2px solid transparent;
+               font-family:'Plus Jakarta Sans',sans-serif;font-size:0.8rem;font-weight:700;
+               color:var(--ink-muted);cursor:pointer;margin-bottom:-2px;transition:all 0.15s;">
+        🔗 Sambungkan
+      </button>
+    </div>
+
+    <!-- TAB: PANDUAN -->
+    <div id="spanel-panduan">
+      <h3 style="font-size:1rem;font-weight:800;color:var(--green-deep);margin-bottom:0.4rem;">Setup Google Sheets — 5 Menit</h3>
+      <p style="font-size:0.8rem;color:var(--ink-muted);margin-bottom:1rem;line-height:1.6;">Ikuti langkah berikut. Setelah selesai, setiap laporan yang disimpan akan otomatis masuk ke spreadsheet kamu.</p>
+
+      <div class="modal-steps">
+        <div class="modal-step">
+          <div class="step-num">1</div>
+          <div>
+            <strong>Buat Spreadsheet baru</strong><br>
+            <span style="font-size:0.78rem;color:var(--ink-muted);">Buka <a href="https://sheets.google.com" target="_blank" style="color:var(--green-mid);font-weight:700;">sheets.google.com</a> → klik <strong>+</strong> untuk buat spreadsheet kosong. Beri nama misalnya <em>"TGOFresh Laporan Panen"</em>.</span>
+          </div>
+        </div>
+        <div class="modal-step">
+          <div class="step-num">2</div>
+          <div>
+            <strong>Buka Apps Script</strong><br>
+            <span style="font-size:0.78rem;color:var(--ink-muted);">Di menu spreadsheet: klik <strong>Extensions</strong> → <strong>Apps Script</strong>. Tab baru akan terbuka.</span>
+          </div>
+        </div>
+        <div class="modal-step">
+          <div class="step-num">3</div>
+          <div>
+            <strong>Paste kode</strong><br>
+            <span style="font-size:0.78rem;color:var(--ink-muted);">Hapus semua kode yang ada di editor, lalu paste kode dari tab <strong>"Kode Apps Script"</strong> di atas. Klik ikon 💾 Save (Ctrl+S).</span>
+          </div>
+        </div>
+        <div class="modal-step">
+          <div class="step-num">4</div>
+          <div>
+            <strong>Deploy sebagai Web App</strong><br>
+            <span style="font-size:0.78rem;color:var(--ink-muted);">Klik tombol <strong>Deploy</strong> → <strong>New deployment</strong> → pilih type: <strong>Web app</strong>.<br>
+            Isi:<br>
+            &nbsp;• <em>Execute as</em>: <strong>Me</strong><br>
+            &nbsp;• <em>Who has access</em>: <strong>Anyone</strong><br>
+            Klik <strong>Deploy</strong> → izinkan akses jika diminta → salin <strong>Web app URL</strong>.</span>
+          </div>
+        </div>
+        <div class="modal-step">
+          <div class="step-num">5</div>
+          <div>
+            <strong>Sambungkan ke aplikasi</strong><br>
+            <span style="font-size:0.78rem;color:var(--ink-muted);">Buka tab <strong>"Sambungkan"</strong> di atas, paste URL tadi, klik Simpan. Selesai! ✅</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:8px;padding:0.75rem 1rem;font-size:0.75rem;color:#92400e;margin-top:0.75rem;">
+        ⚠️ <strong>Penting:</strong> Setiap kali kamu mengubah kode Apps Script, kamu perlu <strong>deploy ulang</strong> (New deployment, bukan Edit deployment) agar perubahan aktif.
+      </div>
+
+      <div style="margin-top:1rem;display:flex;gap:0.75rem;">
+        <button class="btn-modal-close" onclick="closeSheetsModal()">Tutup</button>
+        <button class="btn-modal-confirm" onclick="switchTab('kode')">Lihat Kode →</button>
+      </div>
+    </div>
+
+    <!-- TAB: KODE -->
+    <div id="spanel-kode" style="display:none;">
+      <h3 style="font-size:1rem;font-weight:800;color:var(--green-deep);margin-bottom:0.4rem;">💻 Kode Google Apps Script</h3>
+      <p style="font-size:0.8rem;color:var(--ink-muted);margin-bottom:0.75rem;">Copy semua kode di bawah, paste ke editor Apps Script (hapus kode lama dulu).</p>
+
+      <div style="position:relative;">
+        <button onclick="copyScript()" id="copyBtn"
+          style="position:absolute;top:0.5rem;right:0.5rem;background:rgba(255,255,255,0.15);
+                 border:1px solid rgba(255,255,255,0.3);color:#a8d5ae;border-radius:6px;
+                 padding:0.3rem 0.6rem;font-size:0.7rem;font-weight:700;cursor:pointer;
+                 font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.15s;z-index:2;">
+          📋 Copy
+        </button>
+        <div style="background:#0f1c14;border-radius:10px;padding:1rem;overflow-x:auto;max-height:320px;overflow-y:auto;">
+          <pre id="scriptCode" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:#a8d5ae;white-space:pre;line-height:1.6;margin:0;">function doPost(e) {
+  try {
+    const ss  = SpreadsheetApp.getActiveSpreadsheet();
+    const sh  = ss.getSheetByName("Laporan") || ss.insertSheet("Laporan");
+
+    // Buat header jika sheet masih kosong
+    if (sh.getLastRow() === 0) {
+      sh.appendRow([
+        "Tanggal", "Hari", "Jam", "Komoditas",
+        "Total Panen (kg)", "Harga/kg (Rp)",
+        "Nama Customer", "Qty Customer (kg)",
+        "Harga Customer/kg", "Subtotal Customer (Rp)",
+        "Total Omzet (Rp)", "Catatan", "Dicatat Pada"
+      ]);
+      // Format header
+      const hdr = sh.getRange(1, 1, 1, 13);
+      hdr.setBackground("#1a4d2e");
+      hdr.setFontColor("#ffffff");
+      hdr.setFontWeight("bold");
+      sh.setFrozenRows(1);
+    }
+
+    const d = JSON.parse(e.postData.contents);
+    const tgl = new Date(d.tanggal + "T00:00:00");
+    const days = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+    const hari = days[tgl.getDay()];
+    const timestamp = new Date().toLocaleString("id-ID", {timeZone:"Asia/Jakarta"});
+
+    // Tulis baris per customer
+    if (d.customers && d.customers.length > 0) {
+      d.customers.forEach(function(c, i) {
+        sh.appendRow([
+          i === 0 ? d.tanggal : "",
+          i === 0 ? hari : "",
+          i === 0 ? d.jam : "",
+          i === 0 ? d.komoditas : "",
+          i === 0 ? d.totalPanen : "",
+          i === 0 ? d.hargaKg : "",
+          c.nama || "",
+          c.qty || "",
+          c.harga || "",
+          c.subtotal || "",
+          i === 0 ? d.omzet : "",
+          i === 0 ? (d.catatan || "") : "",
+          i === 0 ? timestamp : ""
+        ]);
+      });
+    } else {
+      // Tidak ada customer
+      sh.appendRow([
+        d.tanggal, hari, d.jam, d.komoditas,
+        d.totalPanen, d.hargaKg,
+        "-", "-", "-", "-",
+        d.omzet, d.catatan || "", timestamp
+      ]);
+    }
+
+    // Auto-resize kolom
+    sh.autoResizeColumns(1, 13);
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ok: true}))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ok: false, error: err.message}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// Fungsi test — jalankan manual dari editor untuk cek
+function testSetup() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName("Laporan") || ss.insertSheet("Laporan");
+  Logger.log("Sheet OK: " + sh.getName());
+}</pre>
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;display:flex;gap:0.75rem;">
+        <button class="btn-modal-close" onclick="switchTab('panduan')">← Kembali</button>
+        <button class="btn-modal-confirm" onclick="switchTab('url')">Sudah Dipaste → Sambungkan</button>
+      </div>
+    </div>
+
+    <!-- TAB: SAMBUNGKAN -->
+    <div id="spanel-url" style="display:none;">
+      <h3 style="font-size:1rem;font-weight:800;color:var(--green-deep);margin-bottom:0.4rem;">🔗 Sambungkan ke Spreadsheet</h3>
+      <p style="font-size:0.8rem;color:var(--ink-muted);margin-bottom:1rem;line-height:1.6;">Paste URL Web App yang kamu dapat dari langkah Deploy di Apps Script.</p>
+
+      <div class="sheets-status" id="sheetsStatus"></div>
+
+      <div style="margin-bottom:0.5rem;font-size:0.72rem;font-weight:700;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.08em;">Web App URL</div>
+      <input class="modal-input" type="url" id="sheetsUrlInput"
+        placeholder="https://script.google.com/macros/s/AKfy.../exec" value=""
+        style="margin-bottom:0.75rem;">
+
+      <div style="background:var(--surface-2);border-radius:8px;padding:0.75rem 1rem;font-size:0.75rem;color:var(--ink-muted);margin-bottom:1rem;line-height:1.6;">
+        💡 URL harus diawali <code style="background:#e8f5e9;color:var(--green-deep);padding:1px 4px;border-radius:3px;">https://script.google.com/macros/s/</code> dan diakhiri <code style="background:#e8f5e9;color:var(--green-deep);padding:1px 4px;border-radius:3px;">/exec</code>
+      </div>
+
+      <div style="margin-top:0;display:flex;gap:0.75rem;">
+        <button class="btn-modal-close" onclick="switchTab('kode')">← Kembali</button>
+        <button class="btn-modal-confirm" onclick="saveSheetsUrl()">✅ Simpan & Test Koneksi</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script>
+// ── STATE ──
+const STORAGE_KEY = 'tgofresh_laporan_v2';
+const SHEETS_KEY  = 'tgofresh_sheets_url';
+const OLD_SHEETS_URL = '';
+// Hindari memakai URL deployment lama yang sudah tidak valid.
+if (localStorage.getItem(SHEETS_KEY) === OLD_SHEETS_URL) {
+  localStorage.removeItem(SHEETS_KEY);
+}
+let laporan = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+let currentFilter = 'all';
+let salesEntryCount = 0;
+
+// komoditas is now free text - no lookup tables needed
+
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  document.getElementById('clockTime').textContent =
+    now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('clockDate').textContent =
+    `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── SET DEFAULT DATE/TIME ──
+function setDefaultDateTime() {
+  const now = new Date();
+  document.getElementById('tanggalPanen').value = now.toISOString().split('T')[0];
+  document.getElementById('jamPanen').value =
+    now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+}
+setDefaultDateTime();
+
+// ── KOMODITAS (manual input) ──
+// No chip selector needed - uses free text input
+
+// ── SALES ENTRIES ──
+function addSalesEntry() {
+  salesEntryCount++;
+  const n = salesEntryCount;
+  const div = document.createElement('div');
+  div.className = 'sales-entry';
+  div.id = `entry-${n}`;
+  div.innerHTML = `
+    <div class="sales-entry-header">
+      <span class="sales-entry-num">Customer #${n}</span>
+      <button class="btn-remove-entry" onclick="removeEntry(${n})">✕ Hapus</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nama Customer</label>
+      <input type="text" class="form-control entry-customer" placeholder="Nama toko / customer">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Qty (kg)</label>
+        <input type="number" class="form-control entry-qty" placeholder="0" min="0" step="0.5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Harga Jual/kg (Rp)</label>
+        <input type="number" class="form-control entry-harga" placeholder="0" min="0">
+      </div>
+    </div>
+  `;
+  document.getElementById('salesEntries').appendChild(div);
+}
+function removeEntry(n) {
+  const el = document.getElementById(`entry-${n}`);
+  if (el) el.remove();
+}
+
+// ── SUBMIT ──
+function submitLaporan() {
+  const namaKomoditas = document.getElementById('namaKomoditas').value.trim();
+  if (!namaKomoditas) { showToast('⚠️ Isi nama komoditas!'); return; }
+  const tanggal   = document.getElementById('tanggalPanen').value;
+  const jam       = document.getElementById('jamPanen').value;
+  const totalPanen= parseFloat(document.getElementById('totalPanen').value) || 0;
+  const hargaKg   = parseFloat(document.getElementById('hargaKg').value) || 0;
+  const catatan   = document.getElementById('catatan').value;
+
+  if (!tanggal) { showToast('⚠️ Isi tanggal panen!'); return; }
+  if (totalPanen <= 0) { showToast('⚠️ Isi total panen!'); return; }
+
+  // Kumpulkan data customers
+  const customers = [];
+  document.querySelectorAll('.sales-entry').forEach(entry => {
+    const nama   = entry.querySelector('.entry-customer').value.trim();
+    const qty    = parseFloat(entry.querySelector('.entry-qty').value) || 0;
+    const harga  = parseFloat(entry.querySelector('.entry-harga').value) || 0;
+    if (nama || qty > 0) customers.push({ nama, qty, harga, subtotal: qty * harga });
+  });
+
+  const omzet = customers.reduce((s,c) => s + c.subtotal, 0) || (totalPanen * hargaKg);
+
+  const record = {
+    id: Date.now(),
+    tanggal, jam, komoditas: namaKomoditas,
+    totalPanen, hargaKg, customers, omzet, catatan,
+    createdAt: new Date().toISOString()
+  };
+
+  laporan.unshift(record);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(laporan));
+
+  // Kirim ke Google Sheets jika terkonfigurasi
+  sendToSheets(record);
+
+  renderTable();
+  renderSummary();
+  resetForm();
+  showToast(`✅ Laporan ${namaKomoditas} berhasil disimpan!`);
+}
+
+function resetForm() {
+  document.getElementById('namaKomoditas').value = '';
+  document.getElementById('totalPanen').value = '';
+  document.getElementById('hargaKg').value = '';
+  document.getElementById('catatan').value = '';
+  document.getElementById('salesEntries').innerHTML = '';
+  salesEntryCount = 0;
+  setDefaultDateTime();
+  addSalesEntry();
+}
+
+// ── FILTER ──
+let filterText = '';
+function setFilter(val, el) {
+  currentFilter = val;
+  filterText = '';
+  const fi = document.getElementById('filterKomoditas');
+  if (fi) fi.value = '';
+  document.querySelectorAll('.fchip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderTable();
+}
+function setFilterText(val) {
+  filterText = val.toLowerCase().trim();
+  currentFilter = 'all';
+  document.querySelectorAll('.fchip').forEach(c => c.classList.remove('active'));
+  const allChip = document.querySelector('.fchip.all');
+  if (allChip) allChip.classList.add('active');
+  renderTable();
+}
+
+// ── RENDER TABLE ──
+function renderTable() {
+  let filtered = laporan;
+  if (filterText) {
+    filtered = laporan.filter(r => r.komoditas.toLowerCase().includes(filterText));
+  }
+
+  const tbody = document.getElementById('riwayatBody');
+  if (!filtered.length) {
+    const msg = currentFilter === 'all'
+      ? 'Belum ada laporan. Mulai input data panen!'
+      : `Tidak ada laporan ditemukan.`;
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">🌱</div><p>${msg}</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const [y,m,d] = r.tanggal.split('-');
+    const months = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    const dateStr = `${d} ${months[parseInt(m)]} ${y}`;
+
+    const customerHTML = r.customers && r.customers.length
+      ? r.customers.map(c =>
+          `<div class="customer-item">${c.nama || '—'}
+           <small>${c.qty} kg × Rp ${fmt(c.harga)} = <strong>Rp ${fmt(c.subtotal)}</strong></small></div>`
+        ).join('')
+      : '<span style="color:var(--ink-muted);font-size:0.75rem;">—</span>';
+
+    return `
+    <tr>
+      <td class="date-cell">
+        <div class="date-main">${dateStr}</div>
+        <div class="date-time">${r.jam || '—'}</div>
+      </td>
+      <td>
+        <span class="komoditas-badge badge-${r.komoditas}">
+          🌿 ${r.komoditas}
+        </span>
+      </td>
+      <td class="qty-cell">${r.totalPanen} kg</td>
+      <td class="price-cell">Rp ${fmt(r.hargaKg)}</td>
+      <td><div class="customer-list">${customerHTML}</div></td>
+      <td class="total-cell">Rp ${fmt(r.omzet)}</td>
+      <td><button class="btn-delete" onclick="deleteRecord(${r.id})">🗑️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── RENDER SUMMARY ──
+function renderSummary() {
+  const today = new Date().toISOString().split('T')[0];
+  const todayRows = laporan.filter(r => r.tanggal === today);
+  const totalPanen = laporan.reduce((s,r) => s + (r.totalPanen||0), 0);
+  const totalOmzet = laporan.reduce((s,r) => s + (r.omzet||0), 0);
+  const todayOmzet = todayRows.reduce((s,r) => s + (r.omzet||0), 0);
+  const uniqueKomoditas = new Set(laporan.map(r => (r.komoditas||'').toLowerCase())).size;
+  const avgPanen = laporan.length ? (totalPanen / laporan.length).toFixed(1) : 0;
+
+  document.getElementById('sum-total').innerHTML = `${laporan.length}<span class="stat-unit">entri</span>`;
+  document.getElementById('sub-total').textContent = `hari ini: ${todayRows.length}`;
+  document.getElementById('sum-panen').innerHTML = `${totalPanen}<span class="stat-unit">kg</span>`;
+  document.getElementById('sub-panen').textContent = `rata-rata: ${avgPanen} kg`;
+  document.getElementById('sum-omzet').textContent = `Rp ${fmt(totalOmzet)}`;
+  document.getElementById('sub-omzet').textContent = `hari ini: Rp ${fmt(todayOmzet)}`;
+  document.getElementById('sum-komoditas').innerHTML = `${uniqueKomoditas}<span class="stat-unit">jenis</span>`;
+  document.getElementById('sub-komoditas').textContent = 'terdaftar';
+}
+
+// ── DELETE ──
+function deleteRecord(id) {
+  if (!confirm('Hapus laporan ini?')) return;
+  laporan = laporan.filter(r => r.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(laporan));
+  renderTable();
+  renderSummary();
+  showToast('🗑️ Laporan dihapus.');
+}
+
+// ── FORMAT NUMBER ──
+function fmt(n) {
+  return Number(n || 0).toLocaleString('id-ID');
+}
+
+// ── CSV EXPORT ──
+function exportCSV() {
+  const data = currentFilter === 'all'
+    ? laporan
+    : laporan.filter(r => r.komoditas === currentFilter);
+
+  if (!data.length) { showToast('⚠️ Tidak ada data untuk diekspor!'); return; }
+
+  const rows = [
+    ['Tanggal','Jam','Komoditas','Total Panen (kg)','Harga/kg (Rp)','Nama Customer','Qty Customer (kg)','Harga Customer','Subtotal Customer','Omzet Total','Catatan']
+  ];
+
+  data.forEach(r => {
+    if (r.customers && r.customers.length) {
+      r.customers.forEach((c, i) => {
+        rows.push([
+          r.tanggal, r.jam,
+          r.komoditas,
+          i === 0 ? r.totalPanen : '',
+          i === 0 ? r.hargaKg : '',
+          c.nama, c.qty, c.harga, c.subtotal,
+          i === 0 ? r.omzet : '',
+          i === 0 ? r.catatan : ''
+        ]);
+      });
+    } else {
+      rows.push([
+        r.tanggal, r.jam,
+        r.komoditas,
+        r.totalPanen, r.hargaKg,
+        '—','—','—','—', r.omzet, r.catatan
+      ]);
+    }
+  });
+
+  const csv = rows.map(row =>
+    row.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')
+  ).join('\n');
+
+  const blob = new Blob(['\uFEFF'+csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const label = currentFilter === 'all' ? 'semua' : currentFilter;
+  const today = new Date().toISOString().split('T')[0];
+  a.download = `tgofresh-laporan-${label}-${today}.csv`;
+  a.click();
+  showToast(`✅ CSV diekspor (${data.length} laporan)`);
+}
+
+// ── GOOGLE SHEETS ──
+function openSheetsModal() {
+  const url = localStorage.getItem(SHEETS_KEY) || '';
+  document.getElementById('sheetsUrlInput').value = url;
+  // Default ke tab panduan, atau langsung ke tab URL kalau sudah ada URL
+  switchTab(url ? 'url' : 'panduan');
+  document.getElementById('sheetsModal').classList.add('open');
+}
+function closeSheetsModal() {
+  document.getElementById('sheetsModal').classList.remove('open');
+}
+
+function switchTab(name) {
+  ['panduan','kode','url'].forEach(t => {
+    const panel = document.getElementById('spanel-' + t);
+    const tab   = document.getElementById('tab-' + t);
+    if (panel) panel.style.display = (t === name) ? 'block' : 'none';
+    if (tab) {
+      tab.style.borderBottomColor = (t === name) ? 'var(--green-deep)' : 'transparent';
+      tab.style.color = (t === name) ? 'var(--green-deep)' : 'var(--ink-muted)';
+    }
+  });
+}
+
+function copyScript() {
+  const code = document.getElementById('scriptCode').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Tersalin!';
+    setTimeout(() => btn.textContent = '📋 Copy', 2000);
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = document.getElementById('scriptCode').textContent;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Tersalin!';
+    setTimeout(() => btn.textContent = '📋 Copy', 2000);
+  });
+}
+
+async function saveSheetsUrl() {
+  const url = document.getElementById('sheetsUrlInput').value.trim();
+  if (!url) { showSheetsStatus('err','⚠️ Masukkan URL Web App terlebih dahulu!'); return; }
+  if (!url.startsWith('https://script.google.com')) {
+    showSheetsStatus('err','❌ URL tidak valid. Harus diawali https://script.google.com');
+    return;
+  }
+  if (!url.endsWith('/exec')) {
+    showSheetsStatus('err','❌ URL harus diakhiri dengan /exec');
+    return;
+  }
+
+  showSheetsStatus('info','⏳ Menguji koneksi ke Sheets...');
+  localStorage.setItem(SHEETS_KEY, url);
+
+  try {
+    // mode no-cors = kita tidak bisa baca response body, tapi request terkirim
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tanggal: new Date().toISOString().split('T')[0],
+        jam: new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),
+        komoditas: '🔧 TEST KONEKSI',
+        totalPanen: 0,
+        hargaKg: 0,
+        customers: [{nama:'Test TGOFresh', qty:0, harga:0, subtotal:0}],
+        omzet: 0,
+        catatan: 'Baris ini dibuat otomatis untuk tes koneksi — boleh dihapus'
+      })
+    });
+    // no-cors selalu "opaque" success — anggap berhasil jika tidak throw
+    showSheetsStatus('ok','✅ Tersambung! Cek spreadsheet kamu — baris test sudah masuk di sheet "Laporan".');
+    updateConnectedBadge(true);
+    document.getElementById('configBanner').style.display = 'none';
+    setTimeout(closeSheetsModal, 3000);
+  } catch(err) {
+    showSheetsStatus('err','❌ Gagal terhubung. Pastikan: (1) Web App sudah di-deploy, (2) Access = Anyone, (3) URL diakhiri /exec');
+  }
+}
+
+function showSheetsStatus(type, msg) {
+  const el = document.getElementById('sheetsStatus');
+  const map = { ok:'ok', err:'err', info:'' };
+  el.className = 'sheets-status ' + (map[type] ?? '');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function sendToSheets(record) {
+  const APPS_URL = localStorage.getItem(SHEETS_KEY);
+
+  if (!APPS_URL) {
+    showToast('⚠️ URL Google Sheets belum disambungkan. Klik tombol Sheets dulu.');
+    updateConnectedBadge(false);
+    document.getElementById('configBanner').style.display = 'block';
+    return;
+  }
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const tgl  = new Date(record.tanggal + 'T00:00:00');
+  const hari = days[tgl.getDay()];
+  const ts   = new Date().toLocaleString('id-ID', {timeZone:'Asia/Jakarta'});
+
+  const payload = {
+    tanggal:    record.tanggal,
+    hari:       hari,
+    jam:        record.jam,
+    komoditas:  record.komoditas,
+    totalPanen: record.totalPanen,
+    hargaKg:    record.hargaKg,
+    customers:  (record.customers||[]).map(c => ({
+      nama: c.nama||'-', qty: c.qty||0, harga: c.harga||0, subtotal: c.subtotal||0
+    })),
+    omzet:     record.omzet,
+    catatan:   record.catatan||'',
+    timestamp: ts
+  };
+
+  try {
+    await fetch(APPS_URL, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify(payload)
+    });
+    // no-cors = response opaque, tapi request terkirim jika deployment benar
+    showToast('✅ Data terkirim ke Google Sheets!');
+    updateConnectedBadge(true);
+  } catch(err) {
+    console.warn('Sheets error:', err);
+    showToast('⚠️ Gagal kirim. Gunakan Export CSV sebagai backup.');
+  }
+}
+
+
+
+function updateConnectedBadge(connected) {
+  const sheetsBtn = document.querySelector('.btn-sheets');
+  if (connected) {
+    sheetsBtn.innerHTML = '📊 Sheets <span class="connected-badge"><span class="live-dot"></span>ON</span>';
+  } else {
+    sheetsBtn.innerHTML = '📊 Sheets';
+  }
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── INIT ──
+function init() {
+  addSalesEntry(); // 1 customer entry default
+  renderTable();
+  renderSummary();
+
+  // Cek Sheets connection
+  const url = localStorage.getItem(SHEETS_KEY);
+  if (url) {
+    updateConnectedBadge(true);
+  } else {
+    // Tampilkan banner setelah ada data
+    if (laporan.length > 0) {
+      document.getElementById('configBanner').style.display = 'block';
+    }
+  }
+}
+init();
+</script>
+</body>
+</html>
