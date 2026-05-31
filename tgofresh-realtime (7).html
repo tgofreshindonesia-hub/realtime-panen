@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TGOFresh – Admin Panen & Penjualan</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --G1:#1a4d2e;--G2:#2d7a4f;--G3:#4caf50;--GL:#e8f5e9;
+  --amber:#f59e0b;--red:#ef4444;--blue:#3b82f6;--purple:#7c3aed;
+  --ink:#0f1c14;--ink2:#5a7060;
+  --s0:#ffffff;--s1:#f4faf5;--s2:#eaf4ec;
+  --bd:#d0e8d4;--bd2:#a8d5ae;
+  --sh:0 2px 12px rgba(26,77,46,.10);--shL:0 8px 32px rgba(26,77,46,.15);
+  --r:12px;--rL:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0f7f1;color:var(--ink);min-height:100vh;}
+
+/* HEADER */
+.hdr{background:var(--s0);border-bottom:2px solid var(--bd);position:sticky;top:0;z-index:100;box-shadow:var(--sh);}
+.hdr-in{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:.7rem 1.4rem;gap:1rem;}
+.logo-wrap img{height:52px;width:auto;display:block;}
+.hdr-title{text-align:center;flex:1;}
+.hdr-title h1{font-size:.95rem;font-weight:700;color:var(--G1);}
+.live-badge{display:inline-flex;align-items:center;gap:.3rem;background:var(--GL);color:var(--G2);font-size:.62rem;font-weight:700;letter-spacing:.08em;padding:.15rem .5rem;border-radius:20px;margin-top:.2rem;text-transform:uppercase;}
+.live-dot{width:6px;height:6px;background:var(--G3);border-radius:50%;animation:pulse 1.6s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.clk-time{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--G1);text-align:right;}
+.clk-date{font-size:.65rem;color:var(--ink2);margin-top:1px;text-align:right;}
+
+/* NAV TABS */
+.nav-tabs{max-width:1280px;margin:.75rem auto 0;padding:0 1.4rem;display:flex;gap:.5rem;}
+.ntab{padding:.55rem 1.1rem;border-radius:8px 8px 0 0;font-size:.82rem;font-weight:700;border:none;background:rgba(255,255,255,.5);color:var(--ink2);cursor:pointer;transition:all .15s;border-bottom:3px solid transparent;}
+.ntab.active{background:var(--s0);color:var(--G1);border-bottom-color:var(--G1);}
+.ntab:hover:not(.active){background:rgba(255,255,255,.8);}
+
+/* MAIN */
+.container{max-width:1280px;margin:0 auto;padding:1.25rem 1.4rem 4rem;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* SUMMARY CARDS */
+.sum-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.25rem;}
+@media(max-width:768px){.sum-grid{grid-template-columns:repeat(2,1fr);}}
+.scard{background:var(--s0);border-radius:var(--r);padding:1rem 1.1rem;border:1.5px solid var(--bd);box-shadow:var(--sh);position:relative;overflow:hidden;transition:transform .15s;}
+.scard:hover{transform:translateY(-2px);}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:99px 99px 0 0;}
+.sc-green::before{background:var(--G2);}
+.sc-amber::before{background:var(--amber);}
+.sc-red::before{background:var(--red);}
+.sc-blue::before{background:var(--blue);}
+.sc-purple::before{background:var(--purple);}
+.slabel{font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem;color:var(--ink2);}
+.sval{font-size:1.45rem;font-weight:800;color:var(--ink);font-family:'JetBrains Mono',monospace;}
+.sunit{font-size:.72rem;color:var(--ink2);font-weight:500;margin-left:3px;}
+.ssub{font-size:.68rem;color:var(--ink2);margin-top:.25rem;}
+
+/* CARD */
+.card{background:var(--s0);border-radius:var(--rL);border:1.5px solid var(--bd);box-shadow:var(--sh);overflow:hidden;margin-bottom:1.25rem;}
+.card-hdr{background:linear-gradient(135deg,var(--G1),var(--G2));color:#fff;padding:.9rem 1.2rem;display:flex;align-items:center;gap:.6rem;}
+.card-hdr-icon{width:30px;height:30px;background:rgba(255,255,255,.18);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
+.card-hdr h2{font-size:.88rem;font-weight:700;}
+.card-hdr p{font-size:.66rem;opacity:.8;margin-top:1px;}
+.card-body{padding:1.2rem;}
+
+/* FORM */
+.fgroup{margin-bottom:.9rem;}
+.flabel{display:block;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink2);margin-bottom:.35rem;}
+.fctrl{width:100%;padding:.62rem .82rem;border:1.5px solid var(--bd);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;color:var(--ink);background:var(--s1);transition:border-color .15s,box-shadow .15s;outline:none;}
+.fctrl:focus{border-color:var(--G2);box-shadow:0 0 0 3px rgba(45,122,79,.12);background:#fff;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;}
+
+/* MASTER STOK BAR */
+.stok-bar{background:linear-gradient(135deg,#0f2d1a,var(--G1));border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem;color:#fff;}
+.stok-bar-title{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.8;margin-bottom:.6rem;}
+.stok-bar-vals{display:flex;gap:1.5rem;flex-wrap:wrap;}
+.stok-item{text-align:left;}
+.stok-item .sv{font-family:'JetBrains Mono',monospace;font-size:1.2rem;font-weight:800;}
+.stok-item .sl{font-size:.68rem;opacity:.75;margin-top:1px;}
+.stok-item.warn .sv{color:#fcd34d;}
+.stok-progress{margin-top:.75rem;}
+.stok-progress-bar{height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;margin-top:.3rem;}
+.stok-progress-fill{height:100%;background:linear-gradient(90deg,var(--G3),#8bc34a);border-radius:3px;transition:width .4s;}
+.stok-progress-fill.warn{background:linear-gradient(90deg,#f59e0b,#fcd34d);}
+.stok-progress-fill.danger{background:linear-gradient(90deg,#ef4444,#f97316);}
+
+/* CUSTOMER ENTRY */
+.centry{background:var(--s1);border:1.5px solid var(--bd);border-radius:10px;padding:.85rem;margin-bottom:.6rem;position:relative;}
+.centry-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;}
+.centry-num{font-size:.67rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--G2);}
+.btn-rm{background:none;border:none;color:var(--red);cursor:pointer;font-size:.78rem;padding:.15rem .4rem;border-radius:4px;transition:background .15s;}
+.btn-rm:hover{background:#fef2f2;}
+
+/* STATUS + PAYMENT BADGES */
+.status-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .6rem;border-radius:20px;font-size:.67rem;font-weight:700;letter-spacing:.04em;white-space:nowrap;}
+.s-pending{background:#fff7ed;color:#c2410c;border:1px solid #fdba74;}
+.s-done{background:#dcfce7;color:#15803d;border:1px solid #86efac;}
+.s-partial{background:#fef9c3;color:#854d0e;border:1px solid #fde047;}
+.pay-badge{display:inline-flex;align-items:center;gap:.25rem;padding:.18rem .5rem;border-radius:6px;font-size:.65rem;font-weight:700;white-space:nowrap;}
+.p-cash{background:#dcfce7;color:#15803d;}
+.p-transfer{background:#dbeafe;color:#1d4ed8;}
+.p-tempo{background:#f3e8ff;color:#6b21a8;}
+.p-cod{background:#fef9c3;color:#854d0e;}
+
+/* BUTTONS */
+.btn-add{width:100%;padding:.6rem;border:2px dashed var(--bd2);border-radius:8px;background:none;color:var(--G2);font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-add:hover{background:var(--GL);border-color:var(--G2);}
+.btn-primary{padding:.88rem;background:linear-gradient(135deg,var(--G1),var(--G2));color:#fff;border:none;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;letter-spacing:.02em;transition:all .15s;box-shadow:0 4px 14px rgba(26,77,46,.3);width:100%;margin-top:.5rem;}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,77,46,.4);}
+.btn-sm{padding:.32rem .75rem;border-radius:7px;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;border:1.5px solid;letter-spacing:.03em;display:inline-flex;align-items:center;gap:.3rem;}
+.btn-green{background:var(--GL);border-color:var(--G2);color:var(--G1);}
+.btn-green:hover{background:var(--G2);color:#fff;}
+.btn-blue{background:#eff6ff;border-color:var(--blue);color:#1d4ed8;}
+.btn-blue:hover{background:var(--blue);color:#fff;}
+.btn-amber{background:#fffbeb;border-color:var(--amber);color:#92400e;}
+.btn-red{background:#fef2f2;border-color:var(--red);color:var(--red);}
+.btn-red:hover{background:var(--red);color:#fff;}
+
+/* TABLE */
+.tbar{padding:.85rem 1.2rem;border-bottom:1.5px solid var(--bd);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.fchip{padding:.28rem .7rem;border-radius:20px;font-size:.72rem;font-weight:700;border:1.5px solid var(--bd);cursor:pointer;transition:all .15s;background:var(--s1);color:var(--ink2);}
+.fchip.active{background:var(--G1);border-color:var(--G1);color:#fff;}
+.tbl-wrap{overflow-x:auto;max-height:480px;overflow-y:auto;}
+table{width:100%;border-collapse:collapse;font-size:.81rem;}
+thead th{position:sticky;top:0;background:var(--s2);color:var(--ink2);font-size:.67rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.62rem .85rem;border-bottom:1.5px solid var(--bd);text-align:left;white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--bd);transition:background .12s;}
+tbody tr:hover{background:var(--s1);}
+tbody td{padding:.62rem .85rem;vertical-align:middle;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.78rem;}
+.fw7{font-weight:700;}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--ink2);}
+.empty .ico{font-size:2rem;margin-bottom:.5rem;}
+
+/* REPORT SECTION */
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+@media(max-width:900px){.report-grid{grid-template-columns:1fr;}}
+.batch-card{background:var(--s0);border:1.5px solid var(--bd);border-radius:var(--r);overflow:hidden;}
+.batch-hdr{background:var(--s2);padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);}
+.batch-hdr h3{font-size:.82rem;font-weight:700;color:var(--G1);}
+.batch-body{padding:1rem;}
+.batch-row{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--bd);font-size:.8rem;}
+.batch-row:last-child{border-bottom:none;}
+.batch-row .bk{color:var(--ink2);}
+.batch-row .bv{font-weight:700;color:var(--ink);font-family:'JetBrains Mono',monospace;}
+.batch-row .bv.green{color:var(--G2);}
+.batch-row .bv.red{color:var(--red);}
+.batch-row .bv.amber{color:#d97706;}
+
+/* EXPORT BAR */
+.exp-bar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal{background:#fff;border-radius:var(--rL);padding:1.75rem;max-width:480px;width:90%;box-shadow:var(--shL);max-height:90vh;overflow-y:auto;}
+.modal h3{font-size:1rem;font-weight:800;color:var(--G1);margin-bottom:.4rem;}
+.modal p{font-size:.82rem;color:var(--ink2);margin-bottom:1rem;line-height:1.6;}
+.modal-btns{display:flex;gap:.75rem;margin-top:1rem;}
+.btn-mc{flex:1;padding:.7rem;border:1.5px solid var(--bd);border-radius:8px;background:none;color:var(--ink2);font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;}
+.btn-mok{flex:2;padding:.7rem;background:linear-gradient(135deg,var(--G1),var(--G2));color:#fff;border:none;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;}
+.sheets-status{font-size:.75rem;padding:.4rem .75rem;border-radius:6px;margin-bottom:.75rem;display:none;}
+.ss-ok{background:#dcfce7;color:var(--G1);display:block;}
+.ss-err{background:#fef2f2;color:var(--red);display:block;}
+.ss-info{background:#dbeafe;color:#1d4ed8;display:block;}
+.minput{width:100%;padding:.65rem .85rem;border:1.5px solid var(--bd);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;color:var(--ink);margin-bottom:.75rem;outline:none;}
+.minput:focus{border-color:var(--G2);}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--G1);color:#fff;padding:.72rem 1.2rem;border-radius:10px;font-size:.83rem;font-weight:600;box-shadow:var(--shL);transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:999;max-width:320px;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+.batch-no-badge{display:inline-flex;align-items:center;gap:.35rem;background:linear-gradient(135deg,var(--G1),var(--G2));color:#fff;font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:700;padding:.3rem .75rem;border-radius:20px;letter-spacing:.04em;}
+.batch-no-preview{background:linear-gradient(135deg,#0f2d1a,var(--G1));border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;}
+.batch-no-preview .label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7);}
+.batch-no-preview .val{font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:800;color:#fff;}
+/* STATUS SELECT */
+select.fctrl option{font-size:.88rem;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="logo-wrap" style="padding:2px 0;">
+      <img src="data:image/png;base64,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" alt="TGOFresh">
+    </div>
+    <div class="hdr-title">
+      <h1>Admin Panel — Panen &amp; Penjualan</h1>
+      <div class="live-badge"><div class="live-dot"></div>Live</div>
+    </div>
+    <div>
+      <div class="clk-time" id="clockTime">--:--:--</div>
+      <div class="clk-date" id="clockDate">---</div>
+    </div>
+  </div>
+  <!-- NAV TABS -->
+  <div class="nav-tabs">
+    <button class="ntab active" onclick="switchMain('input',this)">🌾 Input Panen</button>
+    <button class="ntab" onclick="switchMain('riwayat',this)">📋 Riwayat</button>
+    <button class="ntab" onclick="switchMain('laporan',this)">📊 Laporan Batch</button>
+  </div>
+</header>
+
+<!-- CONTAINER -->
+<div class="container">
+
+<!-- SUMMARY CARDS -->
+<div class="sum-grid">
+  <div class="scard sc-green">
+    <div class="slabel">📦 Total Batch</div>
+    <div class="sval" id="sc-batch">0<span class="sunit">batch</span></div>
+    <div class="ssub" id="sc-batch-sub">0 aktif hari ini</div>
+  </div>
+  <div class="scard sc-amber">
+    <div class="slabel">⚖️ Stok Tersisa</div>
+    <div class="sval" id="sc-stok">0<span class="sunit">kg</span></div>
+    <div class="ssub" id="sc-stok-sub">dari total 0 kg panen</div>
+  </div>
+  <div class="scard sc-blue">
+    <div class="slabel">💰 Omzet Terkumpul</div>
+    <div class="sval" id="sc-omzet" style="font-size:1.1rem;">Rp 0</div>
+    <div class="ssub" id="sc-omzet-sub">pending: Rp 0</div>
+  </div>
+  <div class="scard sc-red">
+    <div class="slabel">⏳ Pending Payment</div>
+    <div class="sval" id="sc-pending">0<span class="sunit">transaksi</span></div>
+    <div class="ssub" id="sc-pending-sub">Rp 0 belum dibayar</div>
+  </div>
+</div>
+
+<!-- ═══ TAB: INPUT PANEN ═══ -->
+<div class="tab-panel active" id="panel-input">
+  <div style="display:grid;grid-template-columns:400px 1fr;gap:1.25rem;align-items:start;">
+  <!-- FORM PANEN -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon">🌾</div>
+      <div><h2>Input Batch Panen</h2><p>Master stok otomatis terpotong saat ada penjualan</p></div>
+    </div>
+    <div class="card-body">
+      <!-- BATCH NO PREVIEW -->
+      <div class="batch-no-preview" id="batchNoPreview">
+        <div>
+          <div class="label">No. Batch Berikutnya</div>
+          <div class="val" id="nextBatchNo">TGF-001</div>
+        </div>
+        <div class="batch-no-badge" id="nextBatchBadge">TGF-001</div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Nama Komoditas</label>
+        <input class="fctrl" type="text" id="fKomoditas" placeholder="Oyong, Cabe Merah, Melon Hijau...">
+      </div>
+      <div class="frow">
+        <div class="fgroup">
+          <label class="flabel">Tanggal Panen</label>
+          <input class="fctrl" type="date" id="fTanggal">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Jam Panen</label>
+          <input class="fctrl" type="time" id="fJam">
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fgroup">
+          <label class="flabel">Total Panen (kg) ← MASTER</label>
+          <input class="fctrl" type="number" id="fTotalPanen" placeholder="0" min="0" step="0.5" oninput="updateStokPreview()">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Harga Jual/kg (Rp) ← MASTER</label>
+          <input class="fctrl" type="number" id="fHargaKg" placeholder="0" min="0" oninput="updateStokPreview()">
+        </div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Catatan</label>
+        <input class="fctrl" type="text" id="fCatatan" placeholder="Kualitas, kondisi panen...">
+      </div>
+
+      <!-- STOK PREVIEW -->
+      <div class="stok-bar" id="stokPreview" style="display:none;">
+        <div class="stok-bar-title">📊 Preview Master Stok Batch Ini</div>
+        <div class="stok-bar-vals">
+          <div class="stok-item"><div class="sv" id="prev-total">0 kg</div><div class="sl">Total Panen</div></div>
+          <div class="stok-item"><div class="sv" id="prev-harga">Rp 0</div><div class="sl">Harga/kg</div></div>
+          <div class="stok-item"><div class="sv" id="prev-nilai">Rp 0</div><div class="sl">Nilai Total</div></div>
+        </div>
+      </div>
+
+      <!-- DATA CUSTOMER -->
+      <div class="flabel" style="margin-bottom:.5rem;">Data Customer / Sales</div>
+      <div id="salesEntries"></div>
+      <button class="btn-add" onclick="addEntry()">+ Tambah Customer</button>
+      <button class="btn-primary" onclick="submitBatch()">💾 Simpan Batch Panen</button>
+    </div>
+  </div>
+
+  <!-- ACTIVE BATCHES SIDE -->
+  <div>
+    <div class="card">
+      <div class="card-hdr" style="background:linear-gradient(135deg,#0f2d1a,var(--G1));">
+        <div class="card-hdr-icon">📦</div>
+        <div><h2>Batch Aktif</h2><p>Stok tersisa dari setiap batch panen</p></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>No. Batch</th><th>Komoditas</th><th>Tanggal</th><th>Total</th><th>Terjual</th><th>Sisa</th><th>Nilai Sisa</th><th>Status</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="activeBatchBody">
+            <tr><td colspan="8"><div class="empty"><div class="ico">📦</div><p>Belum ada batch panen</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ═══ TAB: RIWAYAT ═══ -->
+<div class="tab-panel" id="panel-riwayat">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-hdr-icon">📋</div>
+      <div><h2>Riwayat Transaksi Penjualan</h2><p>Semua data customer, status &amp; metode pembayaran</p></div>
+    </div>
+    <div class="tbar">
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;flex:1;">
+        <div class="fchip active" onclick="setTxFilter('all',this)">Semua</div>
+        <div class="fchip" onclick="setTxFilter('pending',this)">⏳ Pending</div>
+        <div class="fchip" onclick="setTxFilter('partial',this)">🔶 Partial</div>
+        <div class="fchip" onclick="setTxFilter('done',this)">✅ Lunas</div>
+        <input class="fctrl" type="text" id="txSearch" placeholder="🔍 Cari komoditas / customer..."
+          style="max-width:200px;padding:.28rem .7rem;font-size:.78rem;border-radius:20px;height:auto;" oninput="renderTx()">
+      </div>
+      <div class="exp-bar">
+        <button class="btn-sm btn-green" onclick="exportTxCSV()">⬇️ CSV</button>
+        <button class="btn-sm btn-blue" onclick="openSheetsModal()">📊 Sheets</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No. Batch</th><th>Waktu</th><th>Komoditas</th><th>Customer</th><th>Sales</th>
+            <th>Qty (kg)</th><th>Harga/kg</th><th>Subtotal</th>
+            <th>Bayar</th><th>Status</th><th>Sisa Bayar</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="txBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB: LAPORAN BATCH ═══ -->
+<div class="tab-panel" id="panel-laporan">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;">
+    <h2 style="font-size:1rem;font-weight:800;color:var(--G1);">📊 Laporan Panen &amp; Penjualan Per Batch</h2>
+    <div class="exp-bar">
+      <button class="btn-sm btn-green" onclick="exportLaporanCSV()">⬇️ Export CSV Lengkap</button>
+      <button class="btn-sm btn-blue" onclick="printLaporan()">🖨️ Print</button>
+    </div>
+  </div>
+  <div id="batchReportContainer"></div>
+</div>
+
+</div><!-- /container -->
+
+<!-- MODAL EDIT STATUS -->
+<div class="modal-ov" id="editModal">
+  <div class="modal">
+    <h3>✏️ Update Status Pembayaran</h3>
+    <p>Customer: <strong id="editCustName">—</strong></p>
+    <div class="fgroup">
+      <label class="flabel">Status Pembayaran</label>
+      <select class="fctrl" id="editStatus">
+        <option value="pending">⏳ Pending Payment</option>
+        <option value="partial">🔶 Partial (Bayar Sebagian)</option>
+        <option value="done">✅ Done / Lunas</option>
+      </select>
+    </div>
+    <div class="fgroup" id="partialAmountGroup" style="display:none;">
+      <label class="flabel">Jumlah Dibayar (Rp)</label>
+      <input class="fctrl" type="number" id="editPaidAmount" placeholder="0">
+    </div>
+    <div class="fgroup">
+      <label class="flabel">Metode Pembayaran</label>
+      <select class="fctrl" id="editPayMethod">
+        <option value="cash">💵 Cash / Tunai</option>
+        <option value="transfer">🏦 Transfer Bank</option>
+        <option value="tempo">📅 Tempo / Kredit</option>
+        <option value="cod">🚚 COD</option>
+      </select>
+    </div>
+    <div class="fgroup">
+      <label class="flabel">Nama Sales</label>
+      <input class="fctrl" type="text" id="editSales" placeholder="Nama sales...">
+    </div>
+    <div class="fgroup">
+      <label class="flabel">Catatan Pembayaran</label>
+      <input class="fctrl" type="text" id="editNote" placeholder="No. rekening, jatuh tempo, dll...">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-mc" onclick="closeEdit()">Batal</button>
+      <button class="btn-mok" onclick="saveEdit()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SHEETS -->
+<div class="modal-ov" id="sheetsModal">
+  <div class="modal" style="max-width:520px;">
+    <h3>📊 Koneksi Google Sheets &amp; GitHub</h3>
+    <!-- Tab -->
+    <div style="display:flex;border-bottom:2px solid var(--bd);margin-bottom:1rem;">
+      <button onclick="smTab('sheets')" id="smt-sheets" style="flex:1;padding:.5rem;background:none;border:none;border-bottom:2px solid var(--G1);color:var(--G1);font-weight:700;font-size:.8rem;cursor:pointer;margin-bottom:-2px;font-family:inherit;">📊 Google Sheets</button>
+      <button onclick="smTab('github')" id="smt-github" style="flex:1;padding:.5rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink2);font-weight:700;font-size:.8rem;cursor:pointer;margin-bottom:-2px;font-family:inherit;">🐙 GitHub Pages</button>
+      <button onclick="smTab('script')" id="smt-script" style="flex:1;padding:.5rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink2);font-weight:700;font-size:.8rem;cursor:pointer;margin-bottom:-2px;font-family:inherit;">⚙️ Apps Script</button>
+    </div>
+    <!-- Panel Sheets -->
+    <div id="smp-sheets">
+      <div class="sheets-status" id="sheetsStatus"></div>
+      <p style="font-size:.8rem;color:var(--ink2);margin-bottom:.75rem;line-height:1.6;">Data input dari HP maupun desktop akan otomatis masuk ke spreadsheet yang sama.</p>
+      <div class="fgroup">
+        <label class="flabel">Web App URL (Apps Script)</label>
+        <input class="minput" type="url" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:.65rem .85rem;font-size:.75rem;color:#15803d;margin-bottom:.75rem;">
+        🔗 Spreadsheet ID: <strong>1KWEc8VHla1dchrNMIBNP5ZvM2F57QJcBEW8NH2TU3g0</strong><br>
+        <a href="https://docs.google.com/spreadsheets/d/1KWEc8VHla1dchrNMIBNP5ZvM2F57QJcBEW8NH2TU3g0" target="_blank" style="color:#15803d;font-weight:700;">Buka Spreadsheet →</a>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-mc" onclick="closeSheetsModal()">Tutup</button>
+        <button class="btn-mok" onclick="saveSheetsUrl()">✅ Simpan &amp; Test</button>
+      </div>
+    </div>
+    <!-- Panel GitHub -->
+    <div id="smp-github" style="display:none;">
+      <p style="font-size:.8rem;color:var(--ink2);margin-bottom:.75rem;line-height:1.6;">Hosting di GitHub Pages = aplikasi bisa dibuka dari HP mana saja, gratis, tanpa login.</p>
+      <div style="background:var(--s1);border-radius:8px;padding:.85rem;font-size:.8rem;line-height:1.8;margin-bottom:.75rem;">
+        <b>1.</b> Buka <a href="https://github.com/tgofreshindonesia-hub" target="_blank" style="color:var(--G2);font-weight:700;">github.com</a> → login akun kamu<br>
+        <b>2.</b> Buka repo <strong>tgofreshindonesia-hub</strong> → folder yang ada<br>
+        <b>3.</b> Upload file <strong>tgofresh-realtime.html</strong> yang sudah didownload<br>
+        <b>4.</b> Rename jadi <strong>realtime-panen.html</strong> (atau sesuai yang sudah ada)<br>
+        <b>5.</b> Commit → GitHub Pages otomatis update dalam ~1 menit<br>
+        <b>6.</b> Buka dari HP: <code style="background:#e8f5e9;padding:1px 5px;border-radius:3px;font-size:.72rem;">https://tgofreshindonesia-hub.github.io/realtime-panen/</code>
+      </div>
+      <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:.65rem .85rem;font-size:.75rem;color:#c2410c;">
+        ⚠️ Setiap kali file diupdate di Claude, perlu upload ulang ke GitHub. Data tetap aman karena tersimpan di Google Sheets dan localStorage HP masing-masing.
+      </div>
+      <button class="btn-mc" style="width:100%;margin-top:.75rem;" onclick="closeSheetsModal()">Tutup</button>
+    </div>
+    <!-- Panel Script -->
+    <div id="smp-script" style="display:none;">
+      <p style="font-size:.8rem;color:var(--ink2);margin-bottom:.75rem;line-height:1.6;">Paste kode ini ke Google Apps Script. Sudah support 3 sheet otomatis: <em>Batch Panen, Transaksi, Rekap Harian</em>.</p>
+      <div style="position:relative;">
+        <button onclick="copyGS()" style="position:absolute;top:.5rem;right:.5rem;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#a8d5ae;border-radius:6px;padding:.25rem .55rem;font-size:.7rem;font-weight:700;cursor:pointer;font-family:inherit;z-index:2;" id="copyGSBtn">📋 Copy</button>
+        <div style="background:#0f1c14;border-radius:8px;padding:.85rem;max-height:200px;overflow-y:auto;">
+          <pre id="gsCode" style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:#a8d5ae;white-space:pre;line-height:1.5;margin:0;">// Lihat file tgofresh-apps-script.gs yang sudah didownload
+// atau copy dari: deploy ulang dengan kode terbaru v2.0
+// Sheet otomatis: Batch Panen | Transaksi | Rekap Harian
+// doPost() menerima type: batch | update_status | test
+// doGet()  → ping test dari browser</pre>
+        </div>
+      </div>
+      <div style="margin-top:.75rem;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:.65rem .85rem;font-size:.75rem;color:#92400e;">
+        ⚠️ Jika sudah pernah deploy, buat <strong>New deployment</strong> (bukan edit lama) agar kode baru aktif. Who has access: <strong>Anyone</strong>.
+      </div>
+      <button class="btn-mc" style="width:100%;margin-top:.75rem;" onclick="closeSheetsModal()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+const SK   = 'tgofresh_v3_batches';   // array of batches
+const TXSK = 'tgofresh_v3_tx';        // array of transactions
+const SURL = 'tgofresh_sheets_url';
+
+let batches = JSON.parse(localStorage.getItem(SK)  || '[]');
+let txs     = JSON.parse(localStorage.getItem(TXSK)|| '[]');
+
+// Generate nomor batch: TGF-001, TGF-002, dst
+function getNextBatchNo() {
+  if (!batches.length) return 'TGF-001';
+  const nums = batches
+    .map(b => parseInt((b.batchNo||'TGF-000').replace('TGF-',''))||0)
+    .filter(n => !isNaN(n));
+  const max = nums.length ? Math.max(...nums) : 0;
+  return 'TGF-' + String(max + 1).padStart(3, '0');
+}
+
+// Pre-set Sheets URL
+// Selalu pastikan URL benar (overwrite jika ada URL rusak di localStorage)
+const CORRECT_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxUCrZ7ZmLpX7UXW7AzlPLM-rAjrkhJB8G4VfBz3Jc5mzxGzUUOuF2-ObWqksof2r2W/exec';
+const storedUrl = localStorage.getItem(SURL) || '';
+if (!storedUrl || !storedUrl.startsWith('https://script.google.com/macros/s/') || !storedUrl.endsWith('/exec')) {
+  localStorage.setItem(SURL, CORRECT_SHEETS_URL);
+}
+
+let entryCount = 0;
+let txFilter   = 'all';
+let editingTxId = null;
+
+const DAYS = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const MONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+// ══════════════════════════════════
+// CLOCK
+// ══════════════════════════════════
+function updateClock() {
+  const n = new Date();
+  document.getElementById('clockTime').textContent = n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('clockDate').textContent = `${DAYS[n.getDay()]}, ${n.getDate()} ${MONTHS[n.getMonth()]} ${n.getFullYear()}`;
+}
+setInterval(updateClock,1000); updateClock();
+
+function setDefaults() {
+  const n = new Date();
+  document.getElementById('fTanggal').value = n.toISOString().split('T')[0];
+  document.getElementById('fJam').value = n.toTimeString().slice(0,5);
+}
+setDefaults();
+
+// ══════════════════════════════════
+// NAV TABS
+// ══════════════════════════════════
+function switchMain(name, el) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+  if (name==='laporan') renderBatchReport();
+}
+
+// ══════════════════════════════════
+// STOK PREVIEW
+// ══════════════════════════════════
+function updateStokPreview() {
+  const tp = parseFloat(document.getElementById('fTotalPanen').value)||0;
+  const hk = parseFloat(document.getElementById('fHargaKg').value)||0;
+  const prev = document.getElementById('stokPreview');
+  if (tp > 0 || hk > 0) {
+    prev.style.display = 'block';
+    document.getElementById('prev-total').textContent = tp+' kg';
+    document.getElementById('prev-harga').textContent = 'Rp '+fmt(hk);
+    document.getElementById('prev-nilai').textContent = 'Rp '+fmt(tp*hk);
+  } else { prev.style.display = 'none'; }
+}
+
+// ══════════════════════════════════
+// CUSTOMER ENTRIES
+// ══════════════════════════════════
+function addEntry() {
+  entryCount++;
+  const n = entryCount;
+  const div = document.createElement('div');
+  div.className = 'centry'; div.id = 'ce-'+n;
+  div.innerHTML = `
+    <div class="centry-hdr">
+      <span class="centry-num">Customer #${n}</span>
+      <button class="btn-rm" onclick="rmEntry(${n})">✕ Hapus</button>
+    </div>
+    <div class="fgroup">
+      <label class="flabel">Nama Customer / Toko</label>
+      <input class="fctrl ce-nama" type="text" placeholder="Nama customer...">
+    </div>
+    <div class="fgroup">
+      <label class="flabel">Nama Sales</label>
+      <input class="fctrl ce-sales" type="text" placeholder="Sales yang menangani...">
+    </div>
+    <div class="frow3">
+      <div class="fgroup">
+        <label class="flabel">Qty (kg)</label>
+        <input class="fctrl ce-qty" type="number" placeholder="0" min="0" step="0.5">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Harga/kg (Rp)</label>
+        <input class="fctrl ce-harga" type="number" placeholder="0" min="0">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Metode Bayar</label>
+        <select class="fctrl ce-pay">
+          <option value="cash">💵 Cash</option>
+          <option value="transfer">🏦 Transfer</option>
+          <option value="tempo">📅 Tempo</option>
+          <option value="cod">🚚 COD</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fgroup">
+        <label class="flabel">Status Bayar</label>
+        <select class="fctrl ce-status">
+          <option value="pending">⏳ Pending</option>
+          <option value="done">✅ Lunas</option>
+          <option value="partial">🔶 Partial</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Catatan</label>
+        <input class="fctrl ce-note" type="text" placeholder="Jatuh tempo, dll...">
+      </div>
+    </div>`;
+  document.getElementById('salesEntries').appendChild(div);
+}
+function rmEntry(n) {
+  const el = document.getElementById('ce-'+n);
+  if (el) el.remove();
+}
+
+// ══════════════════════════════════
+// SUBMIT BATCH
+// ══════════════════════════════════
+function submitBatch() {
+  const komoditas = document.getElementById('fKomoditas').value.trim();
+  const tanggal   = document.getElementById('fTanggal').value;
+  const jam       = document.getElementById('fJam').value;
+  const totalPanen= parseFloat(document.getElementById('fTotalPanen').value)||0;
+  const hargaKg   = parseFloat(document.getElementById('fHargaKg').value)||0;
+  const catatan   = document.getElementById('fCatatan').value;
+
+  if (!komoditas) { showToast('⚠️ Isi nama komoditas!'); return; }
+  if (!tanggal)   { showToast('⚠️ Isi tanggal panen!'); return; }
+  if (totalPanen<=0) { showToast('⚠️ Isi total panen!'); return; }
+
+  // Kumpulkan customers
+  const entries = document.querySelectorAll('.centry');
+  let customers = [];
+  let totalTerjual = 0;
+
+  for (const e of entries) {
+    const nama   = e.querySelector('.ce-nama').value.trim();
+    const qty    = parseFloat(e.querySelector('.ce-qty').value)||0;
+    const harga  = parseFloat(e.querySelector('.ce-harga').value)||0;
+    const pay    = e.querySelector('.ce-pay').value;
+    const status = e.querySelector('.ce-status').value;
+    const note   = e.querySelector('.ce-note').value;
+    const subtotal = qty * harga;
+    totalTerjual += qty;
+    if (nama || qty > 0) {
+      const sales = e.querySelector('.ce-sales').value.trim();
+      customers.push({ id: Date.now()+Math.random(), nama, sales, qty, harga, subtotal, payMethod: pay, status, note, paidAmount: status==='done'?subtotal:(status==='partial'?0:0) });
+    }
+  }
+
+  // Validasi stok
+  if (totalTerjual > totalPanen) {
+    showToast(`⚠️ Total qty customer (${totalTerjual} kg) melebihi total panen (${totalPanen} kg)!`); return;
+  }
+
+  const stokSisa = totalPanen - totalTerjual;
+  const omzetTotal = customers.reduce((s,c)=>s+c.subtotal,0);
+
+  const batchId = Date.now();
+  const batchNo = getNextBatchNo();
+  const batch = {
+    id: batchId,
+    batchNo,
+    tanggal, jam, komoditas, totalPanen, hargaKg, catatan,
+    stokSisa, totalTerjual, omzetTotal,
+    createdAt: new Date().toISOString()
+  };
+  batches.unshift(batch);
+  localStorage.setItem(SK, JSON.stringify(batches));
+
+  // Simpan transaksi per customer
+  customers.forEach(c => {
+    const tx = {
+      id: Date.now()+Math.random(),
+      batchId,
+      tanggal, jam, komoditas,
+      nama: c.nama, qty: c.qty, harga: c.harga, subtotal: c.subtotal,
+      payMethod: c.payMethod, status: c.status,
+      paidAmount: c.status==='done' ? c.subtotal : (c.status==='partial' ? c.paidAmount : 0),
+      note: c.note,
+      createdAt: new Date().toISOString()
+    };
+    txs.unshift(tx);
+  });
+  localStorage.setItem(TXSK, JSON.stringify(txs));
+
+  // Kirim ke Sheets
+  sendToSheets(batch, customers);
+
+  renderAll();
+  resetForm();
+  showToast(`✅ ${batchNo} — ${komoditas} disimpan! Sisa stok: ${stokSisa} kg`);
+}
+
+function resetForm() {
+  document.getElementById('fKomoditas').value='';
+  document.getElementById('fTotalPanen').value='';
+  document.getElementById('fHargaKg').value='';
+  document.getElementById('fCatatan').value='';
+  document.getElementById('salesEntries').innerHTML='';
+  document.getElementById('stokPreview').style.display='none';
+  entryCount=0;
+  setDefaults();
+  addEntry();
+  updateBatchNoPreview();
+}
+function updateBatchNoPreview() {
+  const no = getNextBatchNo();
+  const el1 = document.getElementById('nextBatchNo');
+  const el2 = document.getElementById('nextBatchBadge');
+  if (el1) el1.textContent = no;
+  if (el2) el2.textContent = no;
+}
+
+// ══════════════════════════════════
+// RENDER ALL
+// ══════════════════════════════════
+function renderAll() {
+  renderSummary();
+  renderActiveBatch();
+  renderTx();
+}
+
+function renderSummary() {
+  const today = new Date().toISOString().split('T')[0];
+  const todayBatches = batches.filter(b=>b.tanggal===today);
+  const totalStokSisa = batches.reduce((s,b)=>s+b.stokSisa,0);
+  const totalPanen = batches.reduce((s,b)=>s+b.totalPanen,0);
+  const omzetDone = txs.filter(t=>t.status==='done').reduce((s,t)=>s+t.subtotal,0);
+  const omzetPending = txs.filter(t=>t.status!=='done').reduce((s,t)=>s+t.subtotal,0);
+  const pendingCount = txs.filter(t=>t.status==='pending'||t.status==='partial').length;
+  const pendingRp = txs.filter(t=>t.status==='pending').reduce((s,t)=>s+t.subtotal,0)
+                  + txs.filter(t=>t.status==='partial').reduce((s,t)=>s+(t.subtotal-(t.paidAmount||0)),0);
+
+  setHTML('sc-batch', `${batches.length}<span class="sunit">batch</span>`);
+  setText('sc-batch-sub', `${todayBatches.length} aktif hari ini`);
+  setHTML('sc-stok', `${totalStokSisa}<span class="sunit">kg</span>`);
+  setText('sc-stok-sub', `dari total ${totalPanen} kg panen`);
+  setText('sc-omzet', `Rp ${fmt(omzetDone)}`);
+  setText('sc-omzet-sub', `pending: Rp ${fmt(omzetPending)}`);
+  setHTML('sc-pending', `${pendingCount}<span class="sunit">transaksi</span>`);
+  setText('sc-pending-sub', `Rp ${fmt(pendingRp)} belum dibayar`);
+}
+
+// ══════════════════════════════════
+// ACTIVE BATCH TABLE
+// ══════════════════════════════════
+function renderActiveBatch() {
+  const body = document.getElementById('activeBatchBody');
+  if (!body) return;
+  if (!batches.length) {
+    body.innerHTML = '<tr><td colspan="9"><div class="empty"><div class="ico">📦</div><p>Belum ada batch panen</p></div></td></tr>';
+    return;
+  }
+  body.innerHTML = batches.map(b => {
+    const pct = b.totalPanen>0 ? Math.round((b.stokSisa/b.totalPanen)*100) : 0;
+    const fillClass = pct>50?'':'pct<=20?danger:warn';
+    const [y,m,d] = b.tanggal.split('-');
+    const dateStr = `${d} ${MONTHS[parseInt(m)-1]} ${y}`;
+    const terjualPct = b.totalPanen>0?Math.round((b.totalTerjual/b.totalPanen)*100):0;
+    const barColor = pct>50?'#4caf50':pct>20?'#f59e0b':'#ef4444';
+    return `<tr>
+      <td><span class="batch-no-badge" style="font-size:.7rem;padding:.2rem .55rem;">${b.batchNo||'—'}</span></td>
+      <td><strong>${b.komoditas}</strong></td>
+      <td class="mono" style="white-space:nowrap;">${dateStr}</td>
+      <td class="mono">${b.totalPanen} kg</td>
+      <td class="mono" style="color:#d97706;">${b.totalTerjual} kg<br><small style="font-size:.65rem;color:var(--ink2);">(${terjualPct}%)</small></td>
+      <td>
+        <div style="font-weight:700;font-family:'JetBrains Mono',monospace;color:${pct>20?'var(--G2)':'var(--red)'};">${b.stokSisa} kg</div>
+        <div style="width:80px;height:5px;background:#e0e0e0;border-radius:3px;margin-top:3px;">
+          <div style="width:${pct}%;height:100%;background:${barColor};border-radius:3px;"></div>
+        </div>
+      </td>
+      <td class="mono fw7" style="color:var(--G2);">Rp ${fmt(b.stokSisa*b.hargaKg)}</td>
+      <td>${pct<=0?'<span class="status-badge s-done">✅ Habis</span>':pct<30?'<span class="status-badge s-partial">🔶 Hampir Habis</span>':'<span class="status-badge s-pending" style="background:#e8f5e9;color:#15803d;border-color:#86efac;">🟢 Tersedia</span>'}</td>
+      <td><button class="btn-sm btn-red" onclick="deleteBatch(${b.id})">🗑️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function deleteBatch(id) {
+  if (!confirm('Hapus batch ini? Transaksi terkait juga akan dihapus.')) return;
+  batches = batches.filter(b=>b.id!==id);
+  txs = txs.filter(t=>t.batchId!==id);
+  localStorage.setItem(SK, JSON.stringify(batches));
+  localStorage.setItem(TXSK, JSON.stringify(txs));
+  renderAll();
+  showToast('🗑️ Batch dihapus.');
+}
+
+// ══════════════════════════════════
+// TRANSACTIONS TABLE
+// ══════════════════════════════════
+function setTxFilter(val, el) {
+  txFilter = val;
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderTx();
+}
+
+function renderTx() {
+  const search = (document.getElementById('txSearch')?.value||'').toLowerCase();
+  let data = txs;
+  if (txFilter !== 'all') data = data.filter(t=>t.status===txFilter);
+  if (search) data = data.filter(t=>(t.komoditas+t.nama).toLowerCase().includes(search));
+
+  const body = document.getElementById('txBody');
+  if (!body) return;
+  if (!data.length) {
+    body.innerHTML = '<tr><td colspan="12"><div class="empty"><div class="ico">📋</div><p>Tidak ada data transaksi</p></div></td></tr>';
+    return;
+  }
+
+  body.innerHTML = data.map(t => {
+    const [y,m,d] = t.tanggal.split('-');
+    const ds = `${d}/${m}/${y}`;
+    const sisaBayar = t.status==='done' ? 0 : t.status==='partial' ? t.subtotal-(t.paidAmount||0) : t.subtotal;
+    const statusBadge = t.status==='done'
+      ? '<span class="status-badge s-done">✅ Lunas</span>'
+      : t.status==='partial'
+        ? '<span class="status-badge s-partial">🔶 Partial</span>'
+        : '<span class="status-badge s-pending">⏳ Pending</span>';
+    const payBadge = {cash:'<span class="pay-badge p-cash">💵 Cash</span>',transfer:'<span class="pay-badge p-transfer">🏦 Transfer</span>',tempo:'<span class="pay-badge p-tempo">📅 Tempo</span>',cod:'<span class="pay-badge p-cod">🚚 COD</span>'}[t.payMethod]||'—';
+    return `<tr>
+      <td><span class="batch-no-badge" style="font-size:.68rem;padding:.18rem .5rem;">${t.batchNo||'—'}</span></td>
+      <td style="white-space:nowrap;"><div style="font-size:.78rem;font-weight:600;">${ds}</div><div style="font-size:.68rem;color:var(--ink2);font-family:'JetBrains Mono',monospace;">${t.jam||'—'}</div></td>
+      <td><span style="background:var(--GL);color:var(--G1);padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700;">🌿 ${t.komoditas}</span></td>
+      <td style="font-weight:600;">${t.nama||'—'}<br><small style="color:var(--ink2);font-size:.68rem;">${t.note||''}</small></td>
+      <td style="font-size:.8rem;color:var(--ink2);">${t.sales?'👤 '+t.sales:'—'}</td>
+      <td class="mono">${t.qty} kg</td>
+      <td class="mono">Rp ${fmt(t.harga)}</td>
+      <td class="mono fw7">Rp ${fmt(t.subtotal)}</td>
+      <td>${payBadge}</td>
+      <td>${statusBadge}</td>
+      <td class="mono" style="color:${sisaBayar>0?'var(--red)':'var(--G2)'};">${sisaBayar>0?'Rp '+fmt(sisaBayar):'—'}</td>
+      <td><button class="btn-sm btn-amber" onclick="openEdit('${t.id}')">✏️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════
+// EDIT PAYMENT STATUS
+// ══════════════════════════════════
+function openEdit(id) {
+  const tx = txs.find(t=>String(t.id)===String(id));
+  if (!tx) return;
+  editingTxId = id;
+  document.getElementById('editCustName').textContent = tx.nama || '—';
+  document.getElementById('editStatus').value = tx.status || 'pending';
+  document.getElementById('editPayMethod').value = tx.payMethod || 'cash';
+  document.getElementById('editPaidAmount').value = tx.paidAmount || '';
+  document.getElementById('editSales').value = tx.sales || '';
+  document.getElementById('editNote').value = tx.note || '';
+  togglePartialAmount();
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEdit() { document.getElementById('editModal').classList.remove('open'); editingTxId=null; }
+function togglePartialAmount() {
+  const s = document.getElementById('editStatus').value;
+  document.getElementById('partialAmountGroup').style.display = s==='partial'?'block':'none';
+}
+document.getElementById('editStatus').addEventListener('change', togglePartialAmount);
+
+function saveEdit() {
+  const tx = txs.find(t=>String(t.id)===String(editingTxId));
+  if (!tx) return;
+  tx.status     = document.getElementById('editStatus').value;
+  tx.payMethod  = document.getElementById('editPayMethod').value;
+  tx.paidAmount = tx.status==='done'?tx.subtotal:(parseFloat(document.getElementById('editPaidAmount').value)||0);
+  tx.sales      = document.getElementById('editSales').value;
+  tx.note       = document.getElementById('editNote').value;
+  localStorage.setItem(TXSK, JSON.stringify(txs));
+  closeEdit();
+  renderAll();
+  // Sync ke Sheets
+  syncTxToSheets(tx);
+  showToast('✅ Status pembayaran diperbarui!');
+}
+
+// ══════════════════════════════════
+// BATCH REPORT
+// ══════════════════════════════════
+function renderBatchReport() {
+  const container = document.getElementById('batchReportContainer');
+  if (!container) return;
+  if (!batches.length) {
+    container.innerHTML = '<div class="empty" style="padding:3rem;"><div class="ico">📊</div><p>Belum ada batch untuk dilaporkan</p></div>';
+    return;
+  }
+
+  container.innerHTML = batches.map(b => {
+    const bTxs  = txs.filter(t=>t.batchId===b.id);
+    const done  = bTxs.filter(t=>t.status==='done');
+    const pend  = bTxs.filter(t=>t.status==='pending');
+    const part  = bTxs.filter(t=>t.status==='partial');
+    const omzetLunas   = done.reduce((s,t)=>s+t.subtotal,0);
+    const omzetPending = pend.reduce((s,t)=>s+t.subtotal,0);
+    const omzetPartial = part.reduce((s,t)=>s+t.subtotal,0);
+    const totalOmzet   = bTxs.reduce((s,t)=>s+t.subtotal,0);
+    const [y,m,d] = b.tanggal.split('-');
+    const ds = `${d} ${MONTHS[parseInt(m)-1]} ${y}`;
+    const pct = b.totalPanen>0?Math.round((b.totalTerjual/b.totalPanen)*100):0;
+
+    const custRows = bTxs.map(t => {
+      const payBadge = {cash:'💵',transfer:'🏦',tempo:'📅',cod:'🚚'}[t.payMethod]||'';
+      const statusColor = t.status==='done'?'var(--G2)':t.status==='partial'?'#d97706':'var(--red)';
+      return `<tr style="font-size:.78rem;">
+        <td style="padding:.4rem .6rem;">${t.nama||'—'}</td>
+        <td style="padding:.4rem .6rem;font-size:.75rem;color:var(--ink2);">${t.sales?'👤 '+t.sales:'—'}</td>
+        <td style="padding:.4rem .6rem;font-family:'JetBrains Mono',monospace;">${t.qty} kg</td>
+        <td style="padding:.4rem .6rem;font-family:'JetBrains Mono',monospace;">Rp ${fmt(t.harga)}</td>
+        <td style="padding:.4rem .6rem;font-family:'JetBrains Mono',monospace;font-weight:700;">Rp ${fmt(t.subtotal)}</td>
+        <td style="padding:.4rem .6rem;">${payBadge} ${t.payMethod||'—'}</td>
+        <td style="padding:.4rem .6rem;color:${statusColor};font-weight:700;">${t.status==='done'?'✅ Lunas':t.status==='partial'?'🔶 Partial':'⏳ Pending'}</td>
+        <td style="padding:.4rem .6rem;font-family:'JetBrains Mono',monospace;color:${t.status==='done'?'var(--G2)':'var(--red)'};">${t.status==='done'?'Lunas':'Rp '+fmt(t.subtotal-(t.paidAmount||0))}</td>
+      </tr>`;
+    }).join('');
+
+    return `<div class="card" style="margin-bottom:1.25rem;">
+      <!-- BATCH HEADER -->
+      <div style="background:linear-gradient(135deg,#0f2d1a,var(--G1));padding:.85rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;">
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:.4rem .75rem;font-size:.75rem;font-weight:700;color:#fff;font-family:'JetBrains Mono',monospace;">${b.batchNo||'BATCH'}</div>
+          <div>
+            <div style="color:#fff;font-size:1rem;font-weight:800;">🌿 ${b.komoditas}</div>
+            <div style="color:rgba(255,255,255,.75);font-size:.7rem;">${ds} · ${b.jam||''}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+          <div style="text-align:right;color:#fff;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:800;">${b.totalPanen} kg</div>
+            <div style="font-size:.65rem;opacity:.75;">Total Panen</div>
+          </div>
+          <div style="text-align:right;color:#8bc34a;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:800;">Rp ${fmt(b.hargaKg)}</div>
+            <div style="font-size:.65rem;opacity:.75;">Harga/kg</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:1rem 1.2rem;">
+        <!-- LAPORAN PANEN -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+          <div style="background:var(--s1);border-radius:10px;padding:.85rem 1rem;border:1px solid var(--bd);">
+            <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-bottom:.6rem;">📊 Laporan Panen</div>
+            <div class="batch-row"><span class="bk">Total Panen</span><span class="bv green">${b.totalPanen} kg</span></div>
+            <div class="batch-row"><span class="bk">Terjual</span><span class="bv amber">${b.totalTerjual} kg (${pct}%)</span></div>
+            <div class="batch-row"><span class="bk">Sisa Stok</span><span class="bv ${b.stokSisa>0?'green':'red'}">${b.stokSisa} kg</span></div>
+            <div class="batch-row"><span class="bk">Harga/kg</span><span class="bv">Rp ${fmt(b.hargaKg)}</span></div>
+            <div class="batch-row" style="border-bottom:none;"><span class="bk">Nilai Sisa</span><span class="bv green">Rp ${fmt(b.stokSisa*b.hargaKg)}</span></div>
+          </div>
+          <div style="background:var(--s1);border-radius:10px;padding:.85rem 1rem;border:1px solid var(--bd);">
+            <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-bottom:.6rem;">💰 Laporan Penjualan</div>
+            <div class="batch-row"><span class="bk">Total Omzet</span><span class="bv green">Rp ${fmt(totalOmzet)}</span></div>
+            <div class="batch-row"><span class="bk">✅ Lunas</span><span class="bv green">Rp ${fmt(omzetLunas)} (${done.length} cust)</span></div>
+            <div class="batch-row"><span class="bk">🔶 Partial</span><span class="bv amber">Rp ${fmt(omzetPartial)} (${part.length} cust)</span></div>
+            <div class="batch-row"><span class="bk">⏳ Pending</span><span class="bv red">Rp ${fmt(omzetPending)} (${pend.length} cust)</span></div>
+            <div class="batch-row" style="border-bottom:none;"><span class="bk">Jml Customer</span><span class="bv">${bTxs.length} transaksi</span></div>
+          </div>
+        </div>
+        <!-- CUSTOMER TABLE -->
+        ${bTxs.length?`<div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-bottom:.4rem;">📋 Detail Customer</div>
+        <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:.8rem;">
+          <thead>
+            <tr style="background:var(--s2);">
+              <th style="padding:.4rem .6rem;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);">Customer</th>
+              <th style="padding:.4rem .6rem;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);">Sales</th>
+              <th style="padding:.4rem .6rem;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);">Qty</th>
+              <th style="padding:.4rem .6rem;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);">Harga/kg</th>
+              <th style="padding:.4rem .6rem;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);">Subtotal</th>
+              <th style="padding:.4rem .6rem;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);">Bayar</th>
+              <th style="padding:.4rem .6rem;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);">Status</th>
+              <th style="padding:.4rem .6rem;text-align:left;font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);">Sisa</th>
+            </tr>
+          </thead>
+          <tbody>${custRows}</tbody>
+        </table></div>` : '<p style="font-size:.82rem;color:var(--ink2);padding:.5rem 0;">Belum ada transaksi penjualan untuk batch ini.</p>'}
+        ${b.catatan?`<div style="margin-top:.75rem;font-size:.75rem;color:var(--ink2);">📝 Catatan: ${b.catatan}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════
+// CSV EXPORT
+// ══════════════════════════════════
+function exportTxCSV() {
+  const rows = [['No. Batch','Tanggal','Jam','Komoditas','Nama Customer','Sales','Qty (kg)','Harga/kg','Subtotal','Metode Bayar','Status','Sudah Dibayar','Sisa Bayar','Catatan']];
+  txs.forEach(t => {
+    const sisa = t.status==='done'?0:t.subtotal-(t.paidAmount||0);
+    rows.push([t.batchNo||'',t.tanggal,t.jam||'',t.komoditas,t.nama,t.sales||'',t.qty,t.harga,t.subtotal,t.payMethod,t.status,t.paidAmount||0,sisa,t.note||'']);
+  });
+  dlCSV(rows, 'tgofresh-transaksi-'+today()+'.csv');
+  showToast('✅ CSV transaksi diekspor!');
+}
+
+function exportLaporanCSV() {
+  const rows = [['No. Batch','Tanggal','Komoditas','Total Panen','Terjual','Sisa Stok','Harga/kg','Total Omzet','Lunas','Pending','Customer','Sales','Qty','Harga Cust','Subtotal','Metode Bayar','Status Bayar','Catatan']];
+  batches.forEach(b => {
+    const bTxs = txs.filter(t=>t.batchId===b.id);
+    if (bTxs.length) {
+      bTxs.forEach((t,i) => {
+        rows.push([
+          i===0?(b.batchNo||b.id):'',i===0?b.tanggal:'',i===0?b.komoditas:'',
+          i===0?b.totalPanen:'',i===0?b.totalTerjual:'',i===0?b.stokSisa:'',i===0?b.hargaKg:'',
+          i===0?b.omzetTotal:'',
+          i===0?txs.filter(tx=>tx.batchId===b.id&&tx.status==='done').reduce((s,tx)=>s+tx.subtotal,0):'',
+          i===0?txs.filter(tx=>tx.batchId===b.id&&tx.status!=='done').reduce((s,tx)=>s+tx.subtotal,0):'',
+          t.nama,t.sales||'',t.qty,t.harga,t.subtotal,t.payMethod,t.status,t.note||''
+        ]);
+      });
+    } else {
+      rows.push([b.id,b.tanggal,b.komoditas,b.totalPanen,b.totalTerjual,b.stokSisa,b.hargaKg,b.omzetTotal,'','','—','—','—','—','—','—',b.catatan||'']);
+    }
+  });
+  dlCSV(rows, 'tgofresh-laporan-batch-'+today()+'.csv');
+  showToast('✅ Laporan batch diekspor!');
+}
+
+function dlCSV(rows, fname) {
+  const csv = rows.map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download = fname; a.click();
+}
+
+function printLaporan() { window.print(); }
+
+// ══════════════════════════════════
+// GOOGLE SHEETS
+// ══════════════════════════════════
+function openSheetsModal() {
+  // Auto-clean URL rusak, tampilkan URL yang benar
+  let savedUrl = localStorage.getItem(SURL) || '';
+  // Fix jika ada duplikat prefix
+  savedUrl = savedUrl.replace(/^https?:\/\/script\.https?:\/\//, 'https://');
+  savedUrl = savedUrl.replace(/^https?:\/\/https?:\/\//, 'https://');
+  if (!savedUrl.startsWith('https://script.google.com/macros/s/') || !savedUrl.endsWith('/exec')) {
+    savedUrl = 'https://script.google.com/macros/s/AKfycbxUCrZ7ZmLpX7UXW7AzlPLM-rAjrkhJB8G4VfBz3Jc5mzxGzUUOuF2-ObWqksof2r2W/exec';
+    localStorage.setItem(SURL, savedUrl);
+  }
+  document.getElementById('sheetsUrlInput').value = savedUrl;
+  const ss = document.getElementById('sheetsStatus'); if(ss) ss.className='sheets-status';
+  document.getElementById('sheetsModal').classList.add('open');
+}
+function closeSheetsModal() { document.getElementById('sheetsModal').classList.remove('open'); }
+function smTab(name) {
+  ['sheets','github','script'].forEach(t => {
+    const p = document.getElementById('smp-'+t);
+    const b = document.getElementById('smt-'+t);
+    if (p) p.style.display = t===name ? 'block' : 'none';
+    if (b) {
+      b.style.borderBottomColor = t===name ? 'var(--G1)' : 'transparent';
+      b.style.color = t===name ? 'var(--G1)' : 'var(--ink2)';
+    }
+  });
+}
+function copyGS() {
+  const text = document.getElementById('gsCode').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const b = document.getElementById('copyGSBtn');
+    if(b){b.textContent='✅ Tersalin!'; setTimeout(()=>b.textContent='📋 Copy',2000);}
+  }).catch(()=>{});
+}
+
+async function saveSheetsUrl() {
+  let url = document.getElementById('sheetsUrlInput').value.trim();
+  // Auto-fix URL duplikat prefix
+  url = url.replace(/^https?:\/\/script\.https?:\/\//, 'https://');
+  url = url.replace(/^https?:\/\/https?:\/\//, 'https://');
+  // Strip trailing whitespace/newline
+  url = url.replace(/\s+$/, '');
+  if (!url || !url.startsWith('https://script.google.com/macros/s/') || !url.endsWith('/exec')) {
+    showSheetsStatus('err','❌ URL tidak valid. Contoh format yang benar:\nhttps://script.google.com/macros/s/AKfy.../exec');
+    document.getElementById('sheetsUrlInput').value = url;
+    return;
+  }
+  localStorage.setItem(SURL, url);
+  showSheetsStatus('info','⏳ Menguji koneksi...');
+  try {
+    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({test:true,source:'TGOFresh Admin'})});
+    showSheetsStatus('ok','✅ Tersambung! Data akan otomatis terkirim ke Sheets.');
+    setTimeout(closeSheetsModal, 2000);
+  } catch(e) { showSheetsStatus('err','❌ Gagal. Pastikan Web App sudah di-deploy dengan access: Anyone'); }
+}
+
+function showSheetsStatus(type, msg) {
+  const el = document.getElementById('sheetsStatus');
+  el.className = 'sheets-status ' + (type==='ok'?'ss-ok':type==='err'?'ss-err':'ss-info');
+  el.textContent = msg;
+}
+
+async function sendToSheets(batch, customers) {
+  const url = localStorage.getItem(SURL);
+  if (!url || !url.includes('script.google.com')) return;
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const tgl  = new Date(batch.tanggal + 'T00:00:00');
+  const ts   = new Date().toLocaleString('id-ID', {timeZone:'Asia/Jakarta'});
+  const payload = {
+    type:          'batch',
+    batchNo:       batch.batchNo   || '',
+    tanggal:       batch.tanggal   || '',
+    hari:          days[tgl.getDay()],
+    jam:           batch.jam       || '',
+    komoditas:     batch.komoditas || '',
+    totalPanen:    batch.totalPanen    || 0,
+    hargaKg:       batch.hargaKg       || 0,
+    stokSisa:      batch.stokSisa      || 0,
+    totalTerjual:  batch.totalTerjual  || 0,
+    omzetTotal:    batch.omzetTotal    || 0,
+    catatan:       batch.catatan       || '',
+    customers: (customers || []).map(cu => ({
+      nama:       cu.nama       || '',
+      sales:      cu.sales      || '',
+      qty:        cu.qty        || 0,
+      harga:      cu.harga      || 0,
+      subtotal:   cu.subtotal   || 0,
+      payMethod:  cu.payMethod  || '',
+      status:     cu.status     || 'pending',
+      paidAmount: cu.paidAmount || 0,
+      note:       cu.note       || ''
+    })),
+    timestamp: ts
+  };
+  try {
+    await fetch(url, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify(payload)
+    });
+    showToast('☁️ ' + (batch.batchNo||'Batch') + ' terkirim ke Google Sheets!');
+  } catch(err) {
+    console.warn('Sheets error:', err);
+    showToast('⚠️ Gagal kirim ke Sheets. Data tersimpan lokal.');
+  }
+}
+
+async function syncTxToSheets(tx) {
+  const url = localStorage.getItem(SURL);
+  if (!url || !url.includes('script.google.com')) return;
+  try {
+    await fetch(url, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        type:       'update_status',
+        batchNo:    tx.batchNo    || '',
+        nama:       tx.nama       || '',
+        komoditas:  tx.komoditas  || '',
+        status:     tx.status     || 'pending',
+        payMethod:  tx.payMethod  || '',
+        paidAmount: tx.paidAmount || 0,
+        note:       tx.note       || '',
+        timestamp:  new Date().toLocaleString('id-ID', {timeZone:'Asia/Jakarta'})
+      })
+    });
+    showToast('☁️ Status bayar tersync ke Sheets!');
+  } catch(err) { console.warn('Sync error:', err); }
+}
+
+// ══════════════════════════════════
+// UTILS
+// ══════════════════════════════════
+function fmt(n) { return Number(n||0).toLocaleString('id-ID'); }
+function today() { return new Date().toISOString().split('T')[0]; }
+// Null-safe setters
+function setHTML(id, val) { const el=document.getElementById(id); if(el) el.innerHTML=val; }
+function setText(id, val) { const el=document.getElementById(id); if(el) el.textContent=val; }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+function updateConnectedBadge(ok) {
+  // update sheets btn visual if needed
+}
+
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
+function init() {
+  addEntry();
+  updateBatchNoPreview();
+  renderAll();
+}
+init();
+</script>
+</body>
+</html>
